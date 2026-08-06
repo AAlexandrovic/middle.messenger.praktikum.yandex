@@ -1,6 +1,6 @@
 [build]
   base = "sprint_1"         
-  publish = "sprint_1/dist" 
+  publish = "dist" 
   command = "npm run build" 
 
 # Настройка SPA-роутинга 
