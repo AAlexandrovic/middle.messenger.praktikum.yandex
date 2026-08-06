@@ -1,0 +1,57 @@
+<div class="chats-page-layout">
+    <!-- Боковая панель -->
+    <aside class="chats-sidebar">
+        <header class="sidebar-header">
+            <div class="user-avatar-zone">
+                <img src="{{chatsPage.currentUser.avatar}}" alt="Аватар">
+                <span>{{chatsPage.currentUser.name}}</span>
+            </div>
+            <a href="/settings" class="router-link settings-btn">Настройки профиля</a>
+        </header>
+        
+        <ul class="chats-list">
+            {{#each chatsPage.chats}}
+            <li class="chat-item {{#if this.isActive}}active{{/if}}">
+                <a href="#chat-{{this.id}}">
+                    <img src="{{this.avatar}}" alt="{{this.name}}" class="chat-avatar">
+                    <div class="chat-info">
+                        <strong>{{this.name}}</strong>
+                        <p>{{this.lastMessage}}</p>
+                    </div>
+                    <div class="chat-meta">
+                        <time>{{this.time}}</time>
+                        {{#if this.unreadCount}}
+                            <span class="unread-badge">{{this.unreadCount}}</span>
+                        {{/if}}
+                    </div>
+                </a>
+            </li>
+            {{/each}}
+        </ul>
+    </aside>
+
+    <!-- Окно открытого чата -->
+    <section class="chat-window">
+        <header class="chat-header">
+            <h3>{{chatsPage.activeChat.name}}</h3>
+        </header>
+
+        <div class="chat-messages">
+            <ul>
+                {{#each chatsPage.activeChat.messages}}
+                <li class="message {{#if this.isIncoming}}message-incoming{{else}}message-outgoing{{/if}}">
+                    <p>{{this.text}}</p>
+                    <time>{{this.time}}</time>
+                </li>
+                {{/each}}
+            </ul>
+        </div>
+
+        <footer class="chat-footer">
+            <form class="message-form">
+                <input type="text" placeholder="Введите сообщение..." required>
+                <button type="submit">Отправить</button>
+            </form>
+        </footer>
+    </section>
+</div>

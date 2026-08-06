@@ -1,0 +1,33 @@
+<section class="settings-container">
+    <h1>Настройки профиля</h1>
+    <form action="/chats" method="GET">
+        <div class="avatar-wrapper">
+            <img src="{{settingsPage.user.avatar}}" alt="Аватар пользователя">
+            <label for="avatar">Изменить аватар</label>
+            <input type="file" id="avatar" name="avatar">
+        </div>
+
+        <label for="first_name">Имя:</label>
+        <input type="text" id="first_name" name="first_name" value="{{settingsPage.user.firstName}}">
+
+        <label for="second_name">Фамилия:</label>
+        <input type="text" id="second_name" name="second_name" value="{{settingsPage.user.secondName}}">
+
+        <label for="display_name">Имя в чате:</label>
+        <input type="text" id="display_name" name="display_name" value="{{settingsPage.user.displayName}}">
+
+        <label for="email">Почта:</label>
+        <input type="email" id="email" name="email" value="{{settingsPage.user.email}}">
+
+        <label for="phone">Телефон:</label>
+        <input type="tel" id="phone" name="phone" value="{{settingsPage.user.phone}}">
+
+        <button type="submit">Сохранить изменения</button>
+    </form>
+    
+    <div class="settings-navigation">
+        <a href="/chats" class="back-link router-link">Назад к чатам</a>
+        <br><br>
+        <a href="/" class="logout-link router-link">Выйти из аккаунта</a>
+    </div>
+</section>
