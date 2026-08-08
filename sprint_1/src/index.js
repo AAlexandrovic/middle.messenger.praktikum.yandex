@@ -18,22 +18,34 @@ const routes = {
 
 function render() {
     let path = window.location.pathname;
-    
-    // Если Netlify добавил /index.html к пути, приравниваем его к главной странице "/"
-    if (path === "/index.html") {
+
+    // Нормализация путей для Netlify
+    // Если хостинг дописывает /index.html или в конце пути стоит лишний слэш (например, /chats/), очищаем их
+    if (path === "/index.html" || path === "") {
         path = "/";
     }
+    
+    // Удаляем завершающий слэш, если он есть (например, "/chats/" превратится в "/chats")
+    if (path.length > 1 && path.endsWith("/")) {
+        path = path.slice(0, -1);
+    }
 
+    // Ищем шаблон. Если роут не найден, принудительно берем error404Template
     const template = routes[path] || error404Template;
 
-    // Компиляция шаблона Handlebars
-    const compiledTemplate = Handlebars.compile(template);
-    
-    // Теперь это безопасно, так как скрипт находится в <head> и не уничтожит сам себя
-    document.body.innerHTML = compiledTemplate(mockData);
+    try {
+        // Компиляция шаблона Handlebars
+        const compiledTemplate = Handlebars.compile(template);
+        
+        // Рендерим HTML в тег body
+        document.body.innerHTML = compiledTemplate(mockData);
 
-    // Навешиваем обработчики событий
-    initEventListeners();
+        // Навешиваем обработчики событий на новые элементы
+        initEventListeners();
+    } catch (error) {
+        // Если Handlebars упадет, мы ХОТЯ БЫ увидим ошибку в консоли Netlify
+        console.error("Критическая ошибка компиляции Handlebars:", error);
+    }
 }
 
 function navigate(path) {
