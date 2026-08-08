@@ -1,3 +1,4 @@
+console.log("!!! СКРИПТ INDEX.JS НАЧАЛ ВЫПОЛНЕНИЕ !!!");
 import Handlebars from "handlebars";
 
 import authTemplate from "./handlebars/components/auth.hbs?raw";
@@ -17,7 +18,9 @@ const routes = {
 };
 
 function render() {
+    console.log("!!! Функция render() успешно вызвана !!!");
     let path = window.location.pathname;
+    console.log("Текущий путь в браузере:", path);
 
     // Нормализация путей для Netlify
     // Если хостинг дописывает /index.html или в конце пути стоит лишний слэш (например, /chats/), очищаем их
@@ -32,13 +35,16 @@ function render() {
 
     // Ищем шаблон. Если роут не найден, принудительно берем error404Template
     const template = routes[path] || error404Template;
+     console.log("Найденный шаблон:", template ? "Да (строка существует)" : "Нет (пусто!)");
 
     try {
         // Компиляция шаблона Handlebars
         const compiledTemplate = Handlebars.compile(template);
+        console.log("Шаблон Handlebars успешно скомпилирован!");
         
         // Рендерим HTML в тег body
         document.body.innerHTML = compiledTemplate(mockData);
+        console.log("HTML успешно записан в body. Текущий body:", document.body.innerHTML);
 
         // Навешиваем обработчики событий на новые элементы
         initEventListeners();
