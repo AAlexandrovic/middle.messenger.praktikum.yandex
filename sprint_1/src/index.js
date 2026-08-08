@@ -61,4 +61,8 @@ function initEventListeners() {
 window.addEventListener("popstate", render);
 
 // Первая загрузка страницы
-document.addEventListener("DOMContentLoaded", render);
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", render);
+} else {
+    render(); // Если документ уже готов, рендерим немедленно
+}
