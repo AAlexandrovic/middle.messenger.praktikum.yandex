@@ -1,25 +1,43 @@
 <section class="auth-container">
-    <h1>Регистрация нового пользователя</h1>
-    <form action="/chats.html" method="GET">
-        <label for="email">Почта:</label>
-        <input type="email" id="email" name="email" required>
+    <h1 class="form-title">Регистрация</h1>
+    <form action="/chats.html" method="GET" class="auth-container__form">
+        <div class="form-field">
+            <label for="email" class="form-field__label">Почта:</label>
+            <input type="email" id="email" name="email" class="form-field__input" required>
+        </div>
+        <div class="form-field">
+            <label for="login" class="form-field__label">Логин:</label>
+            <input type="text" id="login" name="login" class="form-field__input" required>
+        </div>
 
-        <label for="login">Логин:</label>
-        <input type="text" id="login" name="login" required>
+        <div class="form-field">
+            <label for="first_name" class="form-field__label">Имя:</label>
+            <input type="text" id="first_name" name="first_name" class="form-field__input"  required>
+        </div>
 
-        <label for="first_name">Имя:</label>
-        <input type="text" id="first_name" name="first_name" required>
+        <div class="form-field">
+            <label for="second_name" class="form-field__label">Фамилия:</label>
+            <input type="text" id="second_name" name="second_name" class="form-field__input" required>
+        </div>
 
-        <label for="second_name">Фамилия:</label>
-        <input type="text" id="second_name" name="second_name" required>
+        <div class="form-field">
+            <label for="phone" class="form-field__label">Телефон:</label>
+            <input type="tel" id="phone" name="phone" class="form-field__input" required>
+        </div>
+        
+        <div class="form-field">
+            <label for="password" class="form-field__label">Пароль:</label>
+            <input type="password" id="password" name="password" class="form-field__input"  required>
+        </div>
 
-        <label for="phone">Телефон:</label>
-        <input type="tel" id="phone" name="phone" required>
+        <div class="form-field">
+            <label for="password" class="form-field__label">Повторите пароль:</label>
+            <input type="password" id="password" name="password" class="form-field__input"  required>
+        </div>
 
-        <label for="password">Пароль:</label>
-        <input type="password" id="password" name="password" required>
-
-        <button type="submit">Зарегистрироваться</button>
+        <button type="submit" class="form-button" >Зарегистрироваться</button>
     </form>
-    <p>Уже есть аккаунт? <a href="/">Войти</a></p>
+    <p class="auth-container__text">
+        <a href="/">Войти</a>
+    </p>
 </section>

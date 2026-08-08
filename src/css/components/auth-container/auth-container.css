@@ -1,0 +1,19 @@
+.auth-container {
+    box-sizing: border-box;
+    width: 340px;
+    min-height: 450px;;
+    border-radius: 12px;
+    opacity: 1;
+    
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(0deg);
+    
+    background: #ffffff;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+    padding: 40px 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}

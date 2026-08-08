@@ -1,0 +1,9 @@
+@import url(./components/page/page.css);
+@import url(./components/auth-container/auth-container.css);
+@import url(./components/form-title/form-title.css);
+@import url('./components/form-field/form-field.css');
+@import url('./components/form-field/__label/form-field__label.css');
+@import url('./components/form-field/__input/form-field__input.css');
+@import url(./components/auth-container/__form/auth-container__form.css);
+@import url('./components/form-button/form-button.css');
+@import url(./components/auth-container/__text/auth-container__text.css);
