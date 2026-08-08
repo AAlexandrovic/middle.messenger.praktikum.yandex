@@ -17,16 +17,22 @@ const routes = {
 };
 
 function render() {
-    const path = window.location.pathname;
+    let path = window.location.pathname;
+    
+    // Если Netlify добавил /index.html к пути, приравниваем его к главной странице "/"
+    if (path === "/index.html") {
+        path = "/";
+    }
+
     const template = routes[path] || error404Template;
 
     // Компиляция шаблона Handlebars
     const compiledTemplate = Handlebars.compile(template);
     
-    // Рендерим в body (передаем пустой объект, либо объект с данными для страниц)
+    // Теперь это безопасно, так как скрипт находится в <head> и не уничтожит сам себя
     document.body.innerHTML = compiledTemplate(mockData);
 
-    // Навешиваем обработчики событий на заново созданные HTML-элементы
+    // Навешиваем обработчики событий
     initEventListeners();
 }
 
