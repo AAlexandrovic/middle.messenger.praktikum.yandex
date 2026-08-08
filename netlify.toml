@@ -1,5 +1,4 @@
-[build]
-  base = "sprint_1"         
+[build]   
   publish = "dist" 
   command = "npm run build" 
 
