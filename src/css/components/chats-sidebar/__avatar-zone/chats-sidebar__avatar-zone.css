@@ -1,0 +1,19 @@
+.chats-sidebar__avatar-zone {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-avatar-zone img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    background-color: #ccc;
+}
+
+.user-avatar-zone span {
+    font-weight: 600;
+    font-size: 16px;
+    color: #1a1a1a;
+}

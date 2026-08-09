@@ -1,0 +1,14 @@
+.chat-window__input {
+    flex: 1;
+    height: 40px;
+    padding: 0 16px;
+    border: 1px solid #cccccc;
+    border-radius: 20px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.chat-window__input:focus {
+    border-color: #2481cc;
+}

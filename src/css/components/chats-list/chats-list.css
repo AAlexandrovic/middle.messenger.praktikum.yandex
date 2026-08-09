@@ -1,0 +1,6 @@
+.chats-list {
+    list-style: none;
+    overflow-y: auto;
+    flex: 1;
+    padding-left: 0px;
+}

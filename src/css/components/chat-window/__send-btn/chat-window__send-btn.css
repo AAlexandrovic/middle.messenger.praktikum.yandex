@@ -1,0 +1,24 @@
+.chat-window__send-btn {
+    min-width: 40px;
+    min-height: 40px;
+    
+    border-radius: 50%; 
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    padding: 0; 
+
+    background-color: #2481cc;
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    opacity: 1; 
+    font-size: 26px; 
+}
+
+.chat-window__send-btn:hover {
+    background-color: #1e6fa1;
+}

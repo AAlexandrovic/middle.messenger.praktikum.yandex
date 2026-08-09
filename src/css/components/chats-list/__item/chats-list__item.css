@@ -1,0 +1,13 @@
+.chats-list__item {
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s;
+}
+
+.chats-list__item:hover {
+    background-color: #edf2f7;
+}
+
+/* Модификатор активного чата в списке */
+.chats-list__item--active {
+    background-color: #e3efff;
+}
