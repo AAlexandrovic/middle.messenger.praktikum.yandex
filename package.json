@@ -9,6 +9,9 @@
     "preview": "vite preview",
     "start": "npm run dev"
   },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "devDependencies": {
     "sass": "^1.102.0",
     "typescript": "~6.0.2",
