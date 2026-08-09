@@ -7,4 +7,9 @@ export default defineConfig({
       handlebars: "handlebars/dist/handlebars.js",
     },
   },
+    server: {
+    host: "localhost",
+    port: 3000,
+    strictPort: true,
+  },
 });

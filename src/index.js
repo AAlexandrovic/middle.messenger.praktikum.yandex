@@ -1,10 +1,13 @@
 console.log("!!! СКРИПТ INDEX.JS НАЧАЛ ВЫПОЛНЕНИЕ !!!");
+import '../src/css/style.scss';
 import Handlebars from "handlebars";
 
 import authTemplate from "./handlebars/components/auth.hbs?raw";
 import registerTemplate from "./handlebars/components/register.hbs?raw";
 import chatsTemplate from "./handlebars/components/chat.hbs?raw";
-import settingsTemplate from "./handlebars/components/settings.hbs?raw";
+import settingsTemplate from "./handlebars/components/settings/settings.hbs?raw";
+import settingsEditTemplate from "./handlebars/components/settings/edit/user.hbs?raw";
+import settingsPasswordTemplate from "./handlebars/components/settings/edit/password.hbs?raw"
 import error404Template from "./handlebars/components/404.hbs?raw";
 import { mockData } from "./mocks"; 
 
@@ -15,6 +18,8 @@ const routes = {
     "/register": registerTemplate,
     "/chats": chatsTemplate,
     "/settings": settingsTemplate,
+    "/settings/edit": settingsEditTemplate,
+    "/settings/password": settingsPasswordTemplate
 };
 
 function render() {

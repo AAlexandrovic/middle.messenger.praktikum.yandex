@@ -1,0 +1,11 @@
+.error-page__link {
+  display: inline-block;
+  font-size: 18px;
+  color: #1976d2; 
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.error-page__link:hover {
+  color: #0d47a1; /* более тёмный синий при наведении */
+}

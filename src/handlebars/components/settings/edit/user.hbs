@@ -1,0 +1,47 @@
+<div class="settings-page">
+    <aside class="settings-page__sidebar">
+        <a href="/settings" class="round-btn settings-page__back-btn router-link">&larr;</a>
+    </aside>
+
+    <main class="settings-page__content">
+        <form action="/settings" method="GET" class="settings-profile">
+            
+            <div class="settings-profile__avatar-container">
+                <img src="{{settingsPage.user.avatar}}" alt="Аватар пользователя" class="settings-profile__avatar">
+                <h1 class="settings-profile__title">{{settingsPage.user.displayName}}</h1>
+            </div>
+
+            <div class="settings-profile__info-list">
+                <div class="settings-profile__info-item">
+                    <label for="first_name" class="settings-profile__label">Имя</label>
+                    <input type="text" id="first_name" name="first_name" value="{{settingsPage.user.firstName}}" class="settings-profile__value" required>
+                </div>
+
+                <div class="settings-profile__info-item">
+                    <label for="second_name" class="settings-profile__label">Фамилия</label>
+                    <input type="text" id="second_name" name="second_name" value="{{settingsPage.user.secondName}}" class="settings-profile__value" required>
+                </div>
+
+                <div class="settings-profile__info-item">
+                    <label for="display_name" class="settings-profile__label">Имя в чате</label>
+                    <input type="text" id="display_name" name="display_name" value="{{settingsPage.user.displayName}}" class="settings-profile__value">
+                </div>
+
+                <div class="settings-profile__info-item">
+                    <label for="email" class="settings-profile__label">Почта</label>
+                    <input type="email" id="email" name="email" value="{{settingsPage.user.email}}" class="settings-profile__value" required>
+                </div>
+
+                <div class="settings-profile__info-item">
+                    <label for="phone" class="settings-profile__label">Телефон</label>
+                    <input type="tel" id="phone" name="phone" value="{{settingsPage.user.phone}}" class="settings-profile__value">
+                </div>
+            </div>
+
+            <div class="settings-profile__actions">
+                <button type="submit" class="form-button">Сохранить</button>
+            </div>
+            
+        </form>
+    </main>
+</div>
