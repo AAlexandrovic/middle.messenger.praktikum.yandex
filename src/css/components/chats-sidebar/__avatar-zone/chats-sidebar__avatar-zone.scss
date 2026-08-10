@@ -9,11 +9,11 @@
     height: 40px;
     border-radius: 50%;
     object-fit: cover;
-    background-color: #ccc;
+    background-color: $color-gray;
 }
 
 .user-avatar-zone span {
     font-weight: 600;
     font-size: 16px;
-    color: #1a1a1a;
+    color: $color-dark-pure;
 }

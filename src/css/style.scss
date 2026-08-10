@@ -1,3 +1,4 @@
+@import 'variables';
 @import './components/page/page';
 @import './components/auth-container/auth-container';
 @import './components/form-title/form-title';
@@ -57,3 +58,5 @@
 @import './components/error-page/__content/error-page__content';
 @import './components/error-page/__link/error-page__link';
 @import './components/error-page/__message/error-page__message';
+@import './components/visual-hidden/visual-hidden.scss';
+@import './components/settings-profile/__avatar-label/settings-profile__avatar-label.scss';

@@ -1,0 +1,10 @@
+.settings-profile__avatar-label {
+    position: relative;
+    display: block;
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+    margin-bottom: 20px; /* Перенесли отступ сюда, чтобы вёрстка не поплыла */
+}
