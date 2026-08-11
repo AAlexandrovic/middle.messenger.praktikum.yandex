@@ -1,0 +1,9 @@
+[build]   
+  publish = "dist" 
+  command = "npm run build" 
+
+# Настройка SPA-роутинга 
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

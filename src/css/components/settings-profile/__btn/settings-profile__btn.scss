@@ -1,0 +1,29 @@
+.settings-profile__btn {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 13px;
+    line-height: 13px;
+    letter-spacing: 0em;
+    text-decoration: none;
+    
+    /* Сбрасываем фоны и отступы, так как теперь это просто текст-ссылка */
+    background: transparent;
+    padding: 0;
+    border: none;
+    cursor: pointer;
+    
+    transition: opacity 0.2s;
+}
+
+.settings-profile__btn:hover {
+    opacity: 0.7;
+}
+
+.settings-profile__btn_color_blue {
+    color: #3369F3;
+}
+
+/* Красный цвет текста для выхода */
+.settings-profile__btn_color_red {
+    color: #FF2F2F;
+}

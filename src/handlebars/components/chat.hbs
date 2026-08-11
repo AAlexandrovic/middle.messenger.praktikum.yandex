@@ -1,0 +1,66 @@
+<main class="main-content">
+    <div class="chats-page-layout">
+        <!-- Боковая панель -->
+        <aside class="chats-sidebar">
+            <header class="chats-sidebar__header">
+                <div class="chats-sidebar__avatar-zone user-avatar">
+                    <img src="{{chatsPage.currentUser.avatar}}" alt="Аватар" class="user-avatar__img">
+                    <span class="user-avatar__name">{{chatsPage.currentUser.name}}</span>
+                </div>
+                <a href="/settings" class="chats-sidebar__settings-btn router-link">Профиль &gt;</a>
+            </header>
+            
+            <ul class="chats-list">
+                {{#each chatsPage.chats}}
+                <li class="chats-list__item {{#if this.isActive}}chats-list__item--active{{/if}}">
+                    <a href="#chat-{{this.id}}" class="chats-list__link">
+                        <img src="{{this.avatar}}" alt="{{this.name}}" class="chats-list__avatar">
+                        
+                        <div class="chats-list__info">
+                            <strong class="chats-list__name">{{this.name}}</strong>
+                            <p class="chats-list__last-message">{{this.lastMessage}}</p>
+                        </div>
+                        
+                        <div class="chats-list__meta">
+                            <time class="chats-list__time">{{this.time}}</time>
+                            {{#if this.unreadCount}}
+                                <span class="chats-list__unread-badge">{{this.unreadCount}}</span>
+                            {{/if}}
+                        </div>
+                    </a>
+                </li>
+                {{/each}}
+            </ul>
+        </aside>
+
+        <!-- Окно открытого чата -->
+        <section class="chat-window">
+            <!-- Шапка чата -->
+            <header class="chat-window__header">
+                <h3 class="chat-window__title">{{chatsPage.activeChat.name}}</h3>
+            </header>
+
+            <!-- Зона сообщений -->
+            <div class="chat-window__messages-container">
+                <ul class="chat-window__messages-list">
+                    {{#each chatsPage.activeChat.messages}}
+                    <!-- Элемент сообщения с модификатором типа (входящее/исходящее) -->
+                    <li class="chat-window__message {{#if this.isIncoming}}chat-window__message--incoming{{else}}chat-window__message--outgoing{{/if}}">
+                        <p class="chat-window__message-text">{{this.text}}</p>
+                        <time class="chat-window__message-time">{{this.time}}</time>
+                    </li>
+                    {{/each}}
+                </ul>
+            </div>
+
+            <!-- Подвал с формой отправки -->
+            <footer class="chat-window__footer">
+                <form class="chat-window__form">
+                    <input type="text" name="message" placeholder="Введите сообщение..." required class="chat-window__input">
+                    <button type="submit" class="round-btn chat-window__send-btn">&rarr;</button>
+                </form>
+            </footer>
+        </section>
+
+    </div>
+</main>

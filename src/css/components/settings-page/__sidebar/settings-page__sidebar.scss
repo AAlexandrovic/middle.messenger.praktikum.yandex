@@ -1,0 +1,8 @@
+.settings-page__sidebar {
+    width: 64px; /* Узкая фиксированная полоса слева */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px solid #eaeaea;
+    background-color: $color-white;
+}
