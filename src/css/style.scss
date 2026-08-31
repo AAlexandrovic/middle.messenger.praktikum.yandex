@@ -1,4 +1,4 @@
-@import 'variables';
+@import './variables';
 @import './components/page/page';
 @import './components/auth-container/auth-container';
 @import './components/form-title/form-title';
@@ -37,7 +37,6 @@
 @import './components/chat-window/__footer/chat-window__footer';
 @import './components/chat-window/__form/chat-window__form';
 @import './components/chat-window/__input/chat-window__input';
-@import './components/chat-window/__send-btn/chat-window__send-btn';
 @import './components/round-btn/round-btn';
 @import './components/settings-page/__back-btn/settings-page__back-btn';
 @import './components/settings-page/settings-page';
@@ -58,5 +57,6 @@
 @import './components/error-page/__content/error-page__content';
 @import './components/error-page/__link/error-page__link';
 @import './components/error-page/__message/error-page__message';
-@import './components/visual-hidden/visual-hidden.scss';
-@import './components/settings-profile/__avatar-label/settings-profile__avatar-label.scss';
+@import './components/visual-hidden/visual-hidden';
+@import './components/settings-profile/__avatar-label/settings-profile__avatar-label';
+@import './components/form-field/__error-text/form-field__error-text';
