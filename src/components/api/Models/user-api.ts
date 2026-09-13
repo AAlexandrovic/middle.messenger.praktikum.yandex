@@ -29,6 +29,15 @@
         avatar: string;
     }
 
+    export interface ProfileUpdateRequest extends Record<string, unknown> {
+        first_name: string;
+        second_name: string;
+        display_name: string;
+        login: string;
+        email: string;
+        phone: string;
+    }
+
   class UserAPI extends BaseAPI {
        // Авторизация
         signin(data: SignInRequest) {
@@ -50,14 +59,15 @@
           return chatAPIInstance.post<{ id: number }>('/auth/signup', { data });
       }
 
-      request() {
-          // Здесь уже не нужно писать полный путь /api/v1/chats/
-          return chatAPIInstance.get('/full');
-      }
+        request() {
+            // Здесь уже не нужно писать полный путь /api/v1/chats/
+            return chatAPIInstance.get('/full');
+        }
 
-        // Заглушки для абстрактных методов (чтобы класс мог быть создан)
-        update(): Promise<unknown> {
-            throw new Error('ChatAPI.update is not implemented');
+        // Обновление данных пользователя
+        update(data: ProfileUpdateRequest) {
+            // API Практикума принимает данные профиля по пути /user/profile
+            return chatAPIInstance.put<UserDTO>('/user/profile', { data });
         }
 
         delete(): Promise<unknown> {

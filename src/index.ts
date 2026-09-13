@@ -53,11 +53,7 @@ router
           super({ settingsPage: mockData.settingsPage });
       }
   })
-  .use("/settings/edit", class extends SettingsEditPage {
-      constructor() {
-          super({ settingsPage: mockData.settingsPage });
-      }
-  })
+  .use("/settings/edit", SettingsEditPage)
 
 
     UserController.getUser()

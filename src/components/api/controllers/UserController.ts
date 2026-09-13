@@ -1,4 +1,4 @@
-import UserAPI, { type SignInRequest, type UserDTO, type SignUpRequest } from '../Models/user-api';
+import UserAPI, { type SignInRequest, type UserDTO, type SignUpRequest, type ProfileUpdateRequest } from '../Models/user-api';
 import store from '../store';
 
 
@@ -55,6 +55,19 @@ class UserController {
         console.error('logout error:', error);
         throw error;
       });
+  }
+
+   public async updateProfile(data: ProfileUpdateRequest) {
+
+    try {
+      const updatedUser = await UserAPI.update(data);
+
+      store.setState('user', updatedUser);
+      console.log(updatedUser);
+    } catch (error) {
+      console.error('updateProfile error:', error);
+      throw error;
+    }
   }
 }
 

@@ -1,13 +1,16 @@
 import Block from "../../abstracts/Block";
 import { Form } from '../../Form';
 import Router from "../../services/Router";
+import { connect } from "../../api/HOC/connect";
+import { type ProfileUpdateRequest} from "../../api/Models/user-api";
+import UserController from "../../api/controllers/UserController";
 
 // Создаём экземпляр (синглтон внутри класса вернёт тот же роутер)
 const router = new Router(".app");
 
 interface UserProfileData {
   avatar: string;
-  displayName: string;
+  login: string;
   firstName: string;
   secondName: string;
   email: string;
@@ -21,7 +24,7 @@ interface SettingsEditProps {
   [key: string]: unknown;
 }
 
-export default class SettingsEditPage extends Block<SettingsEditProps> {
+class SettingsEditPage extends Block<SettingsEditProps> {
   constructor(props: SettingsEditProps) {
     const user = props.settingsPage?.user || ({} as UserProfileData);
 
@@ -65,7 +68,7 @@ export default class SettingsEditPage extends Block<SettingsEditProps> {
           name: "display_name",
           class: "settings-profile__value",
           label: "Имя в чате",
-          value: user.displayName,
+          value: user.login,
         },
         {
           type: "email",
@@ -88,7 +91,7 @@ export default class SettingsEditPage extends Block<SettingsEditProps> {
     });
 
     this.events = {
-      submit: (e: Event) => {
+      submit: async (e: Event) => {
         e.preventDefault();
 
         const formBlock = this.children.find(
@@ -107,10 +110,29 @@ export default class SettingsEditPage extends Block<SettingsEditProps> {
           return;
         }
 
-        const updatedProfile = { ...formBlock.formData };
+        const profileFormData = formBlock.formData as Record<string, string>;
+        
+        const updatedProfile: ProfileUpdateRequest = {
+          first_name: profileFormData.first_name,
+          second_name: profileFormData.second_name,
+          display_name: profileFormData.display_name || '',
+          email: profileFormData.email,
+          phone: profileFormData.phone || '',
+          login: profileFormData.display_name, // Login обязателен по спецификации API
+        };
 
-        console.log("Сохранение профиля:", updatedProfile);
-        router.go("/settings");
+        try {
+          // Отправляем изменения через контроллер в Flux-поток
+          await UserController.updateProfile(updatedProfile);
+          
+          // Возвращаемся на страницу настроек
+          router.go("/settings");
+        } catch (error) {
+          console.error("Ошибка сохранения профиля:", error);
+          this.setProps({
+            error: "Не удалось обновить данные профиля.",
+          });
+        }
       },
     };
   }
@@ -140,3 +162,27 @@ export default class SettingsEditPage extends Block<SettingsEditProps> {
     </main>
   `;
 }
+
+export default connect((state) => {
+  const user = state.user as any;
+
+  if (!user) {
+    return {
+      settingsPage: { user: null }
+    };
+  }
+
+  return {
+    settingsPage: {
+      user: {
+        login: user.login ?? '',
+        avatar: user.avatar ?? '',
+        displayName: user.display_name ?? user.first_name ?? '',
+        firstName: user.first_name ?? '',
+        secondName: user.second_name ?? '',
+        email: user.email ?? '',
+        phone: user.phone ?? '',
+      }
+    }
+  };
+})(SettingsEditPage);
