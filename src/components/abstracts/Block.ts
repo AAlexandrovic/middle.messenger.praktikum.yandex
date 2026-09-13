@@ -18,7 +18,7 @@ export interface BlockOwnProps extends Object {
 export default abstract class Block<
   Props extends BlockOwnProps = BlockOwnProps,
 > {
-  protected abstract template: string;
+  protected template: string = '';
 
   protected props = {} as Props;
 
@@ -31,6 +31,9 @@ export default abstract class Block<
 
   // изменил на public, чтобы страницы могли читать children
   public children: Block<BlockOwnProps>[] = [];
+
+  // Cкрыт элемент или нет
+  private _isHidden = false;
 
   constructor(props: Props = {} as Props) {
     this.props = props;
@@ -143,5 +146,22 @@ export default abstract class Block<
     this.props = { ...this.props, ...props, __children: [], __refs: {} };
     /** Вызываем метод render, обновляя представление в DOM-дереве */
     this.render();
+  }
+
+  //Методы отображения и скрытия элементов
+  hide(): void {
+    this._isHidden = true;
+    const el = this.element();
+    if (el) {
+      (el as HTMLElement).style.display = "none";
+    }
+  }
+
+  show(): void {
+    this._isHidden = false;
+    const el = this.element();
+    if (el) {
+      (el as HTMLElement).style.display = "";
+    }
   }
 }

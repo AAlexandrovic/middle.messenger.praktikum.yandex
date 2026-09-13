@@ -1,9 +1,14 @@
 import Block from '../abstracts/Block';
 import { Form } from '../Form';
-import { router } from '../services/Router';
+import Router from "../services/Router";
+import UserController from '../api/controllers/UserController';
+import { connect } from '../api/HOC/connect';
 
-export default class AuthForm extends Block {
-  constructor() {
+// Создаём экземпляр (синглтон внутри класса вернёт тот же роутер)
+const router = new Router(".app");
+
+class AuthForm extends Block {
+  constructor(props: any = {}) {
     super({
       id: 'auth-form',
       class: 'auth-container__form',
@@ -30,27 +35,56 @@ export default class AuthForm extends Block {
     });
 
     this.events = {
-      submit: (e: Event) => {
+      submit: async (e: Event) => {
         e.preventDefault();
 
-        // поиск по static componentName
         const formBlock = this.children.find(
           (c) => (c as any)?.constructor?.componentName === 'Form'
         ) as Form | undefined;
 
         if (!formBlock) {
-          console.error('Form component not found! Check static componentName.');
+          console.error('Form component not found!');
           return;
         }
 
         const isValid = formBlock.validate();
         if (!isValid) {
-          console.log('Форма содержит ошибки');
           return;
         }
 
-        console.log('Успешный вход!', formBlock.formData);
-        router.go('/chats');
+        // Собираем данные формы
+        const formData = formBlock.formData; // { login: string, password: string }
+
+        try {          
+          await UserController.signin({
+            login: formData.login,
+            password: formData.password,
+          });
+          
+          // Успех — редирект
+          router.go('/chats');
+        } catch (error: any) {
+          console.error('Ошибка авторизации:', error);
+
+          // Показываем сообщение об ошибке
+          let errorMessage = 'Не удалось войти. Проверьте логин и пароль.';
+
+          if (error?.response) {
+            try {
+              const parsed = JSON.parse(error.response);
+              if (parsed.reason) {
+                errorMessage = parsed.reason;
+              }
+            } catch {
+              // ответ не JSON — оставляем дефолтное сообщение
+            }
+          }
+
+          this.setProps({
+            buttonLabel: 'Авторизоваться',
+            error: errorMessage,
+          });
+        }
       },
     };
   }
@@ -69,9 +103,28 @@ export default class AuthForm extends Block {
         }}}
 
         <p class="auth-container__text">
-          <a href="/register" class="auth-container__link router-link">Нет аккаунта?</a>
+          <!-- Убрали href, чтобы не было перезагрузки -->
+          <a href="#" data-route="/register" class="auth-container__link router-link">Нет аккаунта?</a>
         </p>
       </section>
     </main>
   `;
+
+  // Перехватываем клики по ссылкам с data-route
+  protected componentDidMount() {
+    const links = this.element()?.querySelectorAll('a[data-route]') || [];
+    links.forEach((link) => {
+      const path = link.getAttribute('data-route');
+      if (!path) return;
+
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        router.go(path);
+      });
+    });
+  }
 }
+
+export default connect((state) => ({
+  user: state.user ?? null,
+}))(AuthForm);

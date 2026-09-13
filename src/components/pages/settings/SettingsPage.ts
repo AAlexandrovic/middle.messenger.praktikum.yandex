@@ -1,4 +1,9 @@
 import Block from "../../abstracts/Block";
+import Router from "../../services/Router";
+import { connect } from "../../api/HOC/connect";
+import UserController from "../../api/controllers/UserController";
+
+const router = new Router(".app");
 
 interface UserSettings {
   avatar: string;
@@ -9,14 +14,15 @@ interface UserSettings {
   phone: string;
 }
 
+
 interface SettingsPageProps {
-  settingsPage: {
-    user: UserSettings;
+  settingsPage?: { 
+    user?: UserSettings | null;
   };
   [key: string]: unknown;
 }
 
-export default class SettingsPage extends Block<SettingsPageProps> {
+class SettingsPage extends Block<SettingsPageProps> {
   constructor(props: SettingsPageProps) {
     super(props);
   }
@@ -59,7 +65,7 @@ export default class SettingsPage extends Block<SettingsPageProps> {
                     <div class="settings-profile__actions">
                         <a href="/settings/edit" class="settings-profile__btn settings-profile__btn_color_blue router-link">Изменить данные</a>
                         <a href="/settings/password" class="settings-profile__btn settings-profile__btn_color_blue router-link">Изменить пароль</a>
-                        <a href="/" class="settings-profile__btn settings-profile__btn_color_red router-link">Выйти</a>
+                        <a href="#" class="settings-profile__btn settings-profile__btn_color_red" data-action="logout">Выйти</a>
                     </div>
 
                 </section>
@@ -67,4 +73,53 @@ export default class SettingsPage extends Block<SettingsPageProps> {
         </div>
     </main>
   `;
+
+    protected componentDidMount() {
+    
+    // Находим кнопку выхода
+    const logoutBtn = this.element()?.querySelector('[data-action="logout"]');
+    
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', async (e) => {
+        e.preventDefault(); // Отменяем стандартный переход по ссылке
+        console.log(await UserController.getUser());
+
+        try {
+          // 1. Вызываем метод logout через наш фасад
+          await UserController.logout();
+          
+          // 2. После успешного выхода делаем редирект
+          router.go('/');
+        } catch (error) {
+          console.error('Ошибка выхода:', error);
+          alert('Не удалось выйти из аккаунта. Попробуйте позже.');
+        }
+      });
+    }
+  }
 }
+
+export default connect((state) => {
+  const user = state.user as any;
+
+  // Если юзер в Сторе отсутствует, отдаем структуру с null
+  if (!user) {
+    return {
+      settingsPage: { user: null }
+    };
+  }
+
+  // Маппим данные из API 
+  return {
+    settingsPage: {
+      user: {
+        avatar: user.avatar ?? '',
+        displayName: user.display_name ?? user.first_name ?? 'Пользователь',
+        firstName: user.first_name ?? '',
+        secondName: user.second_name ?? '',
+        email: user.email ?? '',
+        phone: user.phone ?? '',
+      }
+    }
+  };
+})(SettingsPage);

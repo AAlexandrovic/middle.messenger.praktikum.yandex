@@ -1,6 +1,9 @@
 import Block from "../../abstracts/Block";
 import { Form } from '../../Form';
-import { router } from "../../services/Router";
+import Router from "../../services/Router";
+
+// Создаём экземпляр (синглтон внутри класса вернёт тот же роутер)
+const router = new Router(".app");
 
 interface UserAvatar {
   avatar: string;
