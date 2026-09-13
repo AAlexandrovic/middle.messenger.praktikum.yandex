@@ -137,7 +137,13 @@ export default abstract class Block<
       defaultRefs,
     );
 
-    return templateElement.content.firstElementChild;
+    const result = templateElement.content.firstElementChild;
+    
+    if (result && this._isHidden) {
+      (result as HTMLElement).style.display = "none";
+    }
+
+    return result;
   }
 
   // метод для обновления свойств компонента

@@ -56,11 +56,11 @@
       }
 
         // Заглушки для абстрактных методов (чтобы класс мог быть создан)
-        update(...args: any[]): Promise<unknown> {
+        update(): Promise<unknown> {
             throw new Error('ChatAPI.update is not implemented');
         }
 
-        delete(...args: any[]): Promise<unknown> {
+        delete(): Promise<unknown> {
             throw new Error('ChatAPI.delete is not implemented');
         }
   } 

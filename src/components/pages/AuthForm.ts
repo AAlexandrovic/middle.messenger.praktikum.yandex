@@ -8,7 +8,7 @@ import { connect } from '../api/HOC/connect';
 const router = new Router(".app");
 
 class AuthForm extends Block {
-  constructor(props: any = {}) {
+  constructor() {
     super({
       id: 'auth-form',
       class: 'auth-container__form',

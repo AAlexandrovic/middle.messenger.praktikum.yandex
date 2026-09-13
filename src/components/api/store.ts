@@ -40,9 +40,9 @@ function set(object: Indexed | unknown, path: string, value: unknown): Indexed |
     }
 
     // Приводим value к Indexed, чтобы reduceRight принял его как аккумулятор
-    const nested = keys.reduceRight<Indexed>((acc, key) => {
-        return { [key]: acc } as Indexed;
-    }, value as Indexed);
+    // const nested = keys.reduceRight<Indexed>((acc, key) => {
+    //     return { [key]: acc } as Indexed;
+    // }, value as Indexed);
 
     let current: Indexed = object; // Начинаем с корня
 
