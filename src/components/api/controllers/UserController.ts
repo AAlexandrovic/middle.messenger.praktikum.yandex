@@ -72,16 +72,9 @@ class UserController {
 
     public async updateAvatar(data: FormData): Promise<void> {
     try {
-      // 1. Отправляем FormData на сервер через модель API
-      // Бэкенд Практикума в случае успеха возвращает обновленный объект UserDTO
       const updatedUser = await UserAPI.updateAvatar(data);
 
-      // 2. Записываем обновленные данные пользователя в глобальный стор.
-      // Благодаря этому HOC connect мгновенно оповестит компонент SettingsEditPage,
-      // и аватарка обновится на экране без перезагрузки страницы.
       store.setState('user', updatedUser);
-      
-      console.log('Аватар успешно обновлен в Store:', updatedUser.avatar);
     } catch (error) {
       console.error('updateAvatar error в UserController:', error);
       // Пробрасываем ошибку дальше, чтобы компонент мог вывести её в UI

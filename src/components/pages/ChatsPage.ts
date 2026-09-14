@@ -1,5 +1,6 @@
 import Block from "../abstracts/Block";
 import { validateField } from "../services/Validation";
+import { connect } from '../api/HOC/connect';
 
 interface MessageItem {
   id: number;
@@ -37,7 +38,7 @@ interface ChatsPageProps {
   [key: string]: unknown;
 }
 
-export default class ChatsPage extends Block<ChatsPageProps> {
+class ChatsPage extends Block<ChatsPageProps> {
   constructor(props: ChatsPageProps) {
     super({
       ...props,
@@ -155,3 +156,45 @@ export default class ChatsPage extends Block<ChatsPageProps> {
     </main>
   `;
 }
+
+export default connect((state) => {
+  const user = state.user as any;
+  const chats = (state.chats as any[] || []);
+  const activeChatId = state.activeChatId as number | null;
+
+  // Ищем активный чат в списке
+  const activeChat = chats.find(c => c.id === activeChatId);
+
+  return {
+    chatsPage: {
+      // Данные текущего пользователя
+      currentUser: {
+        name: user?.first_name || 'Пользователь',
+        avatar: user?.avatar 
+          ? `https://ya-praktikum.tech{user.avatar}` 
+          : 'https://placehold.co'
+      },
+      // Маппинг списка чатов из формата API в формат для вашего шаблона {{#each chatsPage.chats}}
+      chats: chats.map(chat => ({
+        id: chat.id,
+        title: chat.title, // С сервера приходит title, а в шаблоне у вас {{this.title}} (в рефакторинге компонента мы это учли)
+        isActive: chat.id === activeChatId,
+        unreadCount: chat.unread_count,
+        lastMessage: chat.last_message?.content || 'Нет сообщений',
+        // Красиво форматируем время последнего сообщения, если оно есть
+        time: chat.last_message?.time 
+          ? new Date(chat.last_message.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+          : '',
+        avatar: chat.avatar 
+          ? `https://ya-praktikum.tech{chat.avatar}` 
+          : 'https://placehold.co'
+      })),
+      // Пока вебсокета нет, сообщения оставляем пустыми, либо берем заглушку
+      activeChat: {
+        id: activeChatId,
+        name: activeChat?.title || '',
+        messages: [] // Сюда позже пойдут сообщения из WebSocket
+      }
+    }
+  };
+})(ChatsPage);

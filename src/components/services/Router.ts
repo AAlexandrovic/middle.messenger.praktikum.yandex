@@ -2,8 +2,27 @@ import Block from "../abstracts/Block";
 
 type BlockConstructor = new (...args: any[]) => Block<any>;
 
-function isEqual(lhs: string, rhs: string): boolean {
-  return lhs === rhs;
+// Вспомогательная функция для очистки пути от query-параметров
+function getCleanPath(pathname: string): string {
+  return pathname.split('?')[0];
+}
+
+// Вспомогательная функция для парсинга query-строки в объект
+function parseQueryParams(pathname: string): Record<string, string> {
+  const queryParams: Record<string, string> = {};
+  const queryString = pathname.split('?')[1];
+  
+  if (queryString) {
+    const pairs = queryString.split('&');
+    pairs.forEach(pair => {
+      const [key, value] = pair.split('=');
+      if (key) {
+        queryParams[decodeURIComponent(key)] = decodeURIComponent(value || '');
+      }
+    });
+  }
+  
+  return queryParams;
 }
 
 class Route {
@@ -18,10 +37,11 @@ class Route {
     this._props = props;
   }
 
-  navigate(pathname: string): void {
+
+  navigate(pathname: string, queryParams: Record<string, string> = {}): void {
     if (this.match(pathname)) {
       this._pathname = pathname;
-      this.render();
+      this.render(queryParams);
     }
   }
 
@@ -32,12 +52,14 @@ class Route {
   }
 
   match(pathname: string): boolean {
-    return isEqual(pathname, this._pathname);
+    return getCleanPath(pathname) === getCleanPath(this._pathname);
   }
 
-  private render(): void {
+  // Передаем спарсенные query-параметры как пропсы при рендере/обновлении компонента
+  private render(queryParams: Record<string, string>): void {
     if (!this._block) {
-      this._block = new this._blockClass();
+      // Передаем queryParams в конструктор блока при первом создании
+      this._block = new this._blockClass({ queryParams });
 
       const root = document.querySelector(this._props.rootQuery);
       const element = this._block.element();
@@ -48,6 +70,8 @@ class Route {
       return;
     }
 
+    // Если блок уже создан, обновляем его пропсы новыми query-параметрами
+    this._block.setProps({ queryParams });
     this._block.show();
   }
 }
@@ -76,10 +100,10 @@ class Router {
   }
 
   start(): void {
-    this._onRoute(window.location.pathname);
+    this._onRoute(window.location.pathname + window.location.search);
 
     window.onpopstate = () => {
-      this._onRoute(window.location.pathname);
+      this._onRoute(window.location.pathname + window.location.search);
     };
   }
 
@@ -91,8 +115,12 @@ class Router {
         this._currentRoute.leave();
       }
 
+      // Парсим query-параметры из переданного пути 
+      const queryParams = parseQueryParams(pathname);
+
       this._currentRoute = route;
-      this._currentRoute.navigate(pathname);
+      // Передаем параметры в метод navigate
+      this._currentRoute.navigate(pathname, queryParams);
     }
   }
 

@@ -40,11 +40,7 @@ registerComponent(ChatMessage);
 router
   .use("/", AuthForm)
   .use("/register", RegisterForm)
-  .use("/chats", class extends ChatsPage {
-      constructor() {
-          super({ chatsPage: mockData.chatsPage });
-      }
-  })
+  .use("/chats",ChatsPage)
   .use("/404", Error404Page)
   .use("/500", Error500Page)
   .use("/settings", SettingsPage)
