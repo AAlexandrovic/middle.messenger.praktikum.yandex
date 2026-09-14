@@ -39,7 +39,7 @@ class SettingsPage extends Block<SettingsPageProps> {
                 <section class="settings-profile">
                     
                     <div class="settings-profile__avatar-container">
-                        <img src="{{settingsPage.user.avatar}}" alt="Аватар пользователя" class="settings-profile__avatar">
+                        <img src="https://ya-praktikum.tech/api/v2/resources{{settingsPage.user.avatar}}" alt="Аватар пользователя" class="settings-profile__avatar">
                         <h1 class="settings-profile__title">{{settingsPage.user.displayName}}</h1>
                     </div>
 

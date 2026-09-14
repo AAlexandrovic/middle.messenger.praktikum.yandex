@@ -55,12 +55,11 @@
         }
 
 
-      create(data: SignUpRequest) {
-          return chatAPIInstance.post<{ id: number }>('/auth/signup', { data });
-      }
+        create(data: SignUpRequest) {
+            return chatAPIInstance.post<{ id: number }>('/auth/signup', { data });
+        }
 
         request() {
-            // Здесь уже не нужно писать полный путь /api/v1/chats/
             return chatAPIInstance.get('/full');
         }
 
@@ -68,6 +67,11 @@
         update(data: ProfileUpdateRequest) {
             // API Практикума принимает данные профиля по пути /user/profile
             return chatAPIInstance.put<UserDTO>('/user/profile', { data });
+        }
+
+        public updateAvatar(data: FormData): Promise<UserDTO> {
+            // Используем метод PUT, передаем эндпоинт и объект с данными
+            return chatAPIInstance.put<UserDTO>('/user/profile/avatar', { data });
         }
 
         delete(): Promise<unknown> {

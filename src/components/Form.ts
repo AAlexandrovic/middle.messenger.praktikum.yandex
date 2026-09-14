@@ -53,7 +53,10 @@ export class Form extends Block<FormProps> {
 
   public get formData(): Record<string, string> {
     const data: Record<string, string> = {};
-    const inputs = this.element()?.querySelectorAll('input[name]') as NodeListOf<HTMLInputElement> | undefined;
+    
+    // Добавляем селектор :not([type="file"]), чтобы аватар не попадал в текстовые данные профиля
+    const inputs = this.element()?.querySelectorAll('input[name]:not([type="file"])') as NodeListOf<HTMLInputElement> | undefined;
+    
     inputs?.forEach((i) => (data[i.name] = i.value));
     return data;
   }
