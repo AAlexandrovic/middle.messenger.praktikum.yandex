@@ -83,7 +83,7 @@ function connect<Props extends BlockOwnProps>(
           const newState = mapStateToProps(store.getState());
 
           if (!isEqual(state, newState)) {
-            this.setProps({ ...newState } as Partial<Props>);
+            this.setProps({ ...this.props,    ...newState } as Partial<Props>);
           }
 
           state = newState;

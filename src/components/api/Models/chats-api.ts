@@ -3,7 +3,7 @@ import { BaseAPI } from '../base-api';
 import { UserDTO } from './user-api';
 
 // Создаем инстанс транспорта для чатов (базовый URL Яндекса)
-const chatAPIInstance = new HTTPTransport('https://ya-praktikum.tech');
+const chatAPIInstance = new HTTPTransport('https://ya-praktikum.tech/api/v2');
 
 // Структура последнего сообщения из реального ответа API
 export interface LastMessageDTO {
@@ -28,19 +28,17 @@ class ChatsAPI extends BaseAPI {
           return chatAPIInstance.get<ChatDTO[]>('/chats');
         }
 
-        // Создать новый чат
-        public createChat(title: string): Promise<void> {
-          return chatAPIInstance.post<void>('/chats', { data: { title } });
+        public getChatByTitle(title: string): Promise<ChatDTO[]> {
+          return chatAPIInstance.get<ChatDTO[]>('/chats', { 
+            data: { title } 
+          });
         }
 
-        // // Вспомогательный метод получения WebSocket токена для чата
-        // public getChatToken(chatId: number): Promise<{ token: string }> {
-        //   return chatAPIInstance.post<{ token: string }>(`/chats/token/${chatId}`, {});
-        // }
-
-          create(): Promise<unknown> {
-              throw new Error('ChatAPI.delete is not implemented');
+          // Создать новый чат
+          create(title: string): Promise<void> {
+            return chatAPIInstance.post<void>('/chats', { data: { title } });
           }
+
   
           request() {
               return chatAPIInstance.get('/full');
