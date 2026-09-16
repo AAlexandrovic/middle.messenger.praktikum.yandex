@@ -81,8 +81,7 @@ class SettingsPage extends Block<SettingsPageProps> {
     
     if (logoutBtn) {
       logoutBtn.addEventListener('click', async (e) => {
-        e.preventDefault(); // Отменяем стандартный переход по ссылке
-        console.log(await UserController.getUser());
+        e.preventDefault(); 
 
         try {
           // 1. Вызываем метод logout через наш фасад
@@ -91,7 +90,7 @@ class SettingsPage extends Block<SettingsPageProps> {
           // 2. После успешного выхода делаем редирект
           router.go('/');
         } catch (error) {
-          console.error('Ошибка выхода:', error);
+          //console.error('Ошибка выхода:', error);
           alert('Не удалось выйти из аккаунта. Попробуйте позже.');
         }
       });

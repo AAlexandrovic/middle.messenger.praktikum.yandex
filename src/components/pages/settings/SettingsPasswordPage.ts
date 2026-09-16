@@ -1,26 +1,18 @@
 import Block from "../../abstracts/Block";
 import { Form } from '../../Form';
 import Router from "../../services/Router";
+import UserController from "../../api/controllers/UserController";
+import { type PasswordUpdateRequest } from "../../api/Models/user-api";
 
-// Создаём экземпляр (синглтон внутри класса вернёт тот же роутер)
 const router = new Router(".app");
 
-interface UserAvatar {
-  avatar: string;
-  displayName?: string;
-}
-
 interface SettingsPasswordProps {
-  settingsPage: {
-    user: UserAvatar;
-  };
+  error?: string;
   [key: string]: unknown;
 }
 
 export default class SettingsPasswordPage extends Block<SettingsPasswordProps> {
   constructor(props: SettingsPasswordProps) {
-    const user = props.settingsPage?.user || ({} as UserAvatar);
-
     super({
       ...props,
       id: "password-form",
@@ -34,7 +26,7 @@ export default class SettingsPasswordPage extends Block<SettingsPasswordProps> {
       buttonLabel: "Сохранить",
       buttonClass: 'form-button', 
 
-      user: user,
+      user: null, 
 
       fields: [
         {
@@ -65,38 +57,42 @@ export default class SettingsPasswordPage extends Block<SettingsPasswordProps> {
     });
 
     this.events = {
-      submit: (e: Event) => {
+      submit: async (e: Event) => {
         e.preventDefault();
 
         const formBlock = this.children.find(
-          (c) => (c as any).constructor?.componentName === "Form"
+          (c) => (c as any).props?.id === "password-form" || (c as any).constructor?.componentName === "Form"
         ) as Form | undefined;
 
         if (!formBlock) {
-          console.error("Form component not found! Check static componentName.");
+          console.error("Form component not found!");
           return;
         }
 
-
-        // Пока убрал валидацию из формы
-        // const isValid = formBlock.validate();
-        // if (!isValid) {
-        //   console.log("Форма содержит ошибки валидации полей.");
-        //   return;
-        // }
-
-        // Кросс‑полевая валидация: совпадение новых паролей
+        const oldPassword = formBlock.formData["old_password"];
         const newPassword = formBlock.formData["new_password"];
         const repeatPassword = formBlock.formData["repeat_password"];
 
         if (newPassword !== repeatPassword) {
-          console.log("Пароли не совпадают.");
-          // Тут можно добавить логику показа ошибки в UI, если Form умеет отображать ошибки по полю
+          this.setProps({ error: "Новые пароли не совпадают." });
           return;
         }
 
-        console.log("Данные смены пароля успешно собраны:", formBlock.formData);
-        router.go("/settings");
+        const passwordData: PasswordUpdateRequest = {
+          oldPassword,
+          newPassword,
+        };
+
+        try {
+          this.setProps({ error: undefined  });
+          await UserController.updatePassword(passwordData);
+          router.go("/settings");
+        } catch (error) {
+          console.error("Ошибка смены пароля в компоненте:", error);
+          this.setProps({
+            error: "Не удалось изменить пароль. Убедитесь, что старый пароль введен верно.",
+          });
+        }
       },
     };
   }
@@ -109,6 +105,10 @@ export default class SettingsPasswordPage extends Block<SettingsPasswordProps> {
         </aside>
 
         <main class="settings-page__content">
+          {{#if error}}
+            <div class="settings-profile__error">{{error}}</div>
+          {{/if}}
+
           {{{ Form 
               id=id 
               class=class 

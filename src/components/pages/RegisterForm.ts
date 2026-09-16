@@ -93,7 +93,7 @@ class RegisterForm extends Block {
         // Сначала базовая валидация полей (required, формат и т.п.)
         const isValid = formBlock.validate();
         if (!isValid) {
-          console.log("Форма содержит ошибки валидации полей.");
+          //console.log("Форма содержит ошибки валидации полей.");
           return;
         }
 
@@ -102,7 +102,7 @@ class RegisterForm extends Block {
         const repeatPassword = formBlock.formData.repeat_password;
 
         if (password !== repeatPassword) {
-          console.log("Пароли не совпадают.");
+          //console.log("Пароли не совпадают.");
           this.setProps({
             error: "Пароли не совпадают",
           });

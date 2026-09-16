@@ -38,6 +38,23 @@
         phone: string;
     }
 
+    export interface SearchUserDTO {
+        id: number;
+        first_name: string;
+        second_name: string;
+        display_name: string | null;
+        phone: string;
+        login: string;
+        avatar: string | null;
+        email: string;
+    }
+
+    export interface PasswordUpdateRequest extends Record<string, unknown> {
+        oldPassword: string;
+        newPassword: string;
+    }
+
+
   class UserAPI extends BaseAPI {
        // Авторизация
         signin(data: SignInRequest) {
@@ -70,13 +87,23 @@
         }
 
         public updateAvatar(data: FormData): Promise<UserDTO> {
-            // Используем метод PUT, передаем эндпоинт и объект с данными
             return chatAPIInstance.put<UserDTO>('/user/profile/avatar', { data });
+        }
+
+        public updatePassword(data: PasswordUpdateRequest): Promise<void> {
+            return chatAPIInstance.put<void>('/user/password', { data });
         }
 
         delete(): Promise<unknown> {
             throw new Error('ChatAPI.delete is not implemented');
         }
+
+        //Метод поиска пользователя по login
+        searchUsers(login: string): Promise<SearchUserDTO[]> {
+            return chatAPIInstance.post<SearchUserDTO[]>('/user/search', {
+            data: { login }
+        });
+     }
   } 
 
 export default new UserAPI();

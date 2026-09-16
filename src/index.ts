@@ -9,7 +9,6 @@ import SettingsEditPage from "./components/pages/settings/SettingsEditPage";
 import ChatsPage from "./components/pages/ChatsPage";
 import Error404Page from "./components/pages/Error404Page";
 import Error500Page from "./components/pages/Error500Page";
-import { mockData } from "./mocks";
 import Button from './components/Button';
 import { Input } from './components/Input';
 import { Form } from './components/Form';
@@ -44,11 +43,7 @@ router
   .use("/404", Error404Page)
   .use("/500", Error500Page)
   .use("/settings", SettingsPage)
-  .use("/settings/password", class extends SettingsPasswordPage {
-      constructor() {
-          super({ settingsPage: mockData.settingsPage });
-      }
-  })
+  .use("/settings/password", SettingsPasswordPage)
   .use("/settings/edit", SettingsEditPage)
 
 

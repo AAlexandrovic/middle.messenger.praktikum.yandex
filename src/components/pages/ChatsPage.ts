@@ -30,6 +30,7 @@ interface CurrentUser {
 }
 
 interface ActiveChat {
+  id: number | null;
   name: string;
   messages: MessageItem[];
 }
@@ -99,7 +100,10 @@ class ChatsPage extends Block<ChatsPageProps> {
           const messageText = inputEl.value.trim();
           const error = validateField("message", messageText);
 
-          const formBlock = this.children.find((c) => (c as any).constructor?.componentName === "Form") as any;
+          const formBlock = this.children.find(
+            (c) => (c as any).props?.id === "chat-message-form"
+          ) as any;
+
           if (formBlock && !formBlock.validate()) return;
           if (error) return;
 
@@ -127,13 +131,67 @@ class ChatsPage extends Block<ChatsPageProps> {
         }
       },
 
-      click: (event: Event) => {
-        const item = (event.target as HTMLElement).closest('.chats-list__item');
+      click: async (event: Event) => {
+        const target = event.target as HTMLElement;
+
+        // НОВОЕ: Обработка клика по кнопке "Добавить пользователя"
+        if (target.classList.contains('chat-window__add-user-btn')) {
+          event.preventDefault();
+          
+          // Извлекаем id активного чата из глобального Store
+          const activeChatId = store.getState().activeChatId as number | null;
+          if (!activeChatId) {
+            alert('Сначала выберите чат для добавления пользователя.');
+            return;
+          }
+
+          // Вызываем prompt для поиска по имени (login)
+          const userLoginInput = prompt('Введите ЛОГИН (имя) пользователя для поиска и добавления:');
+          if (!userLoginInput || userLoginInput.trim() === '') return;
+
+          const loginToFind = userLoginInput.trim();
+
+          try {
+            const isAdded = await (ChatsController.searchAndAddUserToChat(loginToFind, activeChatId) as any);
+            
+            if (isAdded) {
+              alert(`Пользователь "${loginToFind}" успешно добавлен в чат!`);
+            }
+          } catch (error: any) {
+            alert(`Ошибка: ${error.message || 'Не удалось добавить пользователя.'}`);
+          }
+          return;
+        }
+
+        //Метод удаления пользователей из чата
+        if (target.classList.contains('chat-window__delete-user-btn')) {
+          event.preventDefault();
+          
+          // Берем ID текущего активного чата
+          const activeChatId = store.getState().activeChatId as number | null;
+          if (!activeChatId) {
+            alert('Сначала выберите чат для удаления пользователей.');
+            return;
+          }
+
+          try {
+           const isDeleted = await ChatsController.searchAndDeleteUserFromChat(activeChatId);
+      
+           if (isDeleted) {
+              alert('Пользователь успешно удален из чата!');
+            }
+          } catch (error: any) {
+            alert(`Ошибка: ${error.message || 'Не удалось удалить пользователя.'}`);
+          }
+            return;
+        }
+
+        // Стандартный выбор чата в сайдбаре
+        const item = target.closest('.chats-list__item');
         if (item) {
           event.preventDefault();
-          const chatTitle = item.getAttribute('data-title'); // Извлекаем title чата
+          const chatTitle = item.getAttribute('data-title'); 
           if (chatTitle) {
-            // Переходим на роут с query-параметром title
             router.go(`/chats?title=${encodeURIComponent(chatTitle)}`);
           }
         }
@@ -209,6 +267,18 @@ class ChatsPage extends Block<ChatsPageProps> {
             <!-- Отображаем сообщения -->
             <header class="chat-window__header">
               <h3 class="chat-window__title">{{chatsPage.activeChat.name}}</h3>
+
+            <!-- Кнопка добавления пользователя по логину -->
+              <div class="chat-window__controls">
+                <button class="chat-window__add-user-btn" >
+                  ➕ Добавить пользователя
+                </button>
+
+              <!-- Кнопка удаления пользователя из чата -->
+                <button class="chat-window__delete-user-btn">
+                  ❌ Удалить пользователя
+                </button>
+              </div>
             </header>
 
             <div class="chat-window__messages-container">
@@ -234,9 +304,9 @@ class ChatsPage extends Block<ChatsPageProps> {
             </footer>
           {{else}}
             <!-- Создаём новый чат -->
-            <div class="chat-window__create-zone" style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; padding: 20px;">
-              <h2 style="margin-bottom: 20px; color: #333;">Создать новый чат</h2>
-              <div style="width: 100%; max-width: 400px;">
+            <div class="chat-window__create-zone">
+              <h2>Создать новый чат</h2>
+              <div>
                 {{{ Form
                     id=createFormId
                     class=createFormClass

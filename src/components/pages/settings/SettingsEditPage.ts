@@ -66,6 +66,7 @@ class SettingsEditPage extends Block<SettingsEditProps> {
       { type: "text", id: "first_name", name: "first_name", class: "settings-profile__value", label: "Имя", value: user?.firstName || "", required: true },
       { type: "text", id: "second_name", name: "second_name", class: "settings-profile__value", label: "Фамилия", value: user?.secondName || "", required: true },
       { type: "text", id: "display_name", name: "display_name", class: "settings-profile__value", label: "Имя в чате", value: user?.displayName || "" },
+      { type: "text", id: "login", name: "login", class: "settings-profile__value", label: "Логин", value: user?.login || "" },
       { type: "email", id: "email", name: "email", class: "settings-profile__value", label: "Почта", value: user?.email || "", required: true },
       { type: "tel", id: "phone", name: "phone", class: "settings-profile__value", label: "Телефон", value: user?.phone || "" },
     ];
@@ -91,7 +92,7 @@ class SettingsEditPage extends Block<SettingsEditProps> {
     return false;
   }
 
-  // Наш обработчик перехватывает событие из дочерней формы благодаря всплытию (Event Bubbling)
+  // Обработчик перехватывает событие из дочерней формы
   private async handleAvatarChange(e: Event) {
     const input = e.target as HTMLInputElement;
     
@@ -123,7 +124,7 @@ class SettingsEditPage extends Block<SettingsEditProps> {
       display_name: profileFormData.display_name || '',
       email: profileFormData.email,
       phone: profileFormData.phone || '',
-      login: currentUser.login
+      login: profileFormData.login
     };
 
     try {
@@ -143,7 +144,7 @@ class SettingsEditPage extends Block<SettingsEditProps> {
 
         <main class="settings-page__content">
           {{#if error}}
-            <div class="settings-profile__error" style="color: red; text-align: center; margin-bottom: 15px;">{{error}}</div>
+            <div class="settings-profile__error">{{error}}</div>
           {{/if}}
           
           {{{ Form 

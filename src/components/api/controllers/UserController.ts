@@ -1,4 +1,4 @@
-import UserAPI, { type SignInRequest, type UserDTO, type SignUpRequest, type ProfileUpdateRequest } from '../Models/user-api';
+import UserAPI, { type SignInRequest, type UserDTO, type SignUpRequest, type ProfileUpdateRequest, type PasswordUpdateRequest } from '../Models/user-api';
 import store from '../store';
 
 
@@ -22,7 +22,6 @@ class UserController {
       })
       .catch((error) => {
         if (error?.status === 401) {
-          // 401 — это не ошибка, а нормальный "пользователь не авторизован"
           store.setState('user', null);
           return null;
         }
@@ -34,11 +33,9 @@ class UserController {
 
     public async signup(data: SignUpRequest) {
     try {
-      // 1. Создаем пользователя
+      //Создаем пользователя
       await UserAPI.create(data);
       
-      // 2. После успешной регистрации Практикум автоматически авторизует сессию,
-      // поэтому сразу запрашиваем данные созданного юзера в Стор
       await this.getUser();
     } catch (error) {
       console.error('signup error:', error);
@@ -63,14 +60,14 @@ class UserController {
       const updatedUser = await UserAPI.update(data);
 
       store.setState('user', updatedUser);
-      console.log(updatedUser);
+      //console.log(updatedUser);
     } catch (error) {
       console.error('updateProfile error:', error);
       throw error;
     }
   }
 
-    public async updateAvatar(data: FormData): Promise<void> {
+  public async updateAvatar(data: FormData): Promise<void> {
     try {
       const updatedUser = await UserAPI.updateAvatar(data);
 
@@ -78,6 +75,16 @@ class UserController {
     } catch (error) {
       console.error('updateAvatar error в UserController:', error);
       // Пробрасываем ошибку дальше, чтобы компонент мог вывести её в UI
+      throw error; 
+    }
+  }
+
+  public async updatePassword(data: PasswordUpdateRequest): Promise<void> {
+    try {
+      await UserAPI.updatePassword(data);
+      //console.log('Пароль успешно изменен на сервере');
+    } catch (error) {
+      console.error('updatePassword error :', error);
       throw error; 
     }
   }
