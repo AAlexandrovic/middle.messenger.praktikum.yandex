@@ -32,6 +32,9 @@ export default abstract class Block<
   // изменил на public, чтобы страницы могли читать children
   public children: Block<BlockOwnProps>[] = [];
 
+  //Проверяем отренедрен уже элемент или нет
+  private _isRenderPending = false;
+
   // Cкрыт элемент или нет
   private _isHidden = false;
 
@@ -103,10 +106,6 @@ export default abstract class Block<
     if (this.domElement && fragment) {
       if (this.domElement.parentNode) {
         this.domElement.replaceWith(fragment);
-      } else {
-        console.warn(
-          `[Block.render] Перехват гонки событий: элемент текущего компонента уже был заменен или удален из DOM-дерева.`
-        );
       }
     }
 
@@ -154,10 +153,20 @@ export default abstract class Block<
 
   // метод для обновления свойств компонента
   public setProps(props: Partial<Props>) {
-    /** Мёржим обновляемые свойства */
     this.props = { ...this.props, ...props, __children: [], __refs: {} };
-    /** Вызываем метод render, обновляя представление в DOM-дереве */
-    this.render();
+
+    // Если рендер уже запланирован в текущем цикле, просто пропускаем дублирующий вызов
+    if (this._isRenderPending) {
+      return;
+    }
+
+    this._isRenderPending = true;
+
+    // Планируем рендер в очередь микротасков (выполнится сразу после текущего синхронного кода)
+    Promise.resolve().then(() => {
+      this.render();
+      this._isRenderPending = false; // сбрасываем флаг после успешного рендера
+    });
   }
 
   //Методы отображения и скрытия элементов
