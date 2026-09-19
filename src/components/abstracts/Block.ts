@@ -101,7 +101,13 @@ export default abstract class Block<
     const fragment = this.compile();
 
     if (this.domElement && fragment) {
-      this.domElement.replaceWith(fragment);
+      if (this.domElement.parentNode) {
+        this.domElement.replaceWith(fragment);
+      } else {
+        console.warn(
+          `[Block.render] Перехват гонки событий: элемент текущего компонента уже был заменен или удален из DOM-дерева.`
+        );
+      }
     }
 
     this.domElement = fragment;
