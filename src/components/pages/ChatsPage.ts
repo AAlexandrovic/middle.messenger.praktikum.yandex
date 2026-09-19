@@ -331,8 +331,8 @@ class ChatsPage extends Block<ChatsPageProps> {
           {{#if chatsPage.activeChat.id}}
             <!-- Отображаем сообщения -->
             <header class="chat-window__header">
-            <div style="display: flex; align-items: center; gap: 15px;">
-              <label for="chat-avatar-input" class="chat-window__avatar-label" title="Поменять аватар чата" style="cursor: pointer; position: relative;">
+            <div>
+              <label for="chat-avatar-input" class="chat-window__avatar-label" title="Поменять аватар чата">
                 <img src="{{chatsPage.activeChat.avatar}}" alt="Аватар чата" class="chat-window__avatar-img"/>
                 <input type="file" id="chat-avatar-input" class="chat-avatar-input" accept="image/*" />
               </label>
