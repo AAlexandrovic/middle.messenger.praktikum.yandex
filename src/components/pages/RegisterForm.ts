@@ -1,10 +1,16 @@
 // src/components/pages/RegisterForm.ts
 import Block from "../../components/abstracts/Block";
 import { Form } from "../Form";
-import { router } from '../services/Router';
+import UserController from "../api/controllers/UserController";
+import { type SignUpRequest } from "../api/Models/user-api";
+import { connect } from "../api/HOC/connect";
+import Router from "../services/Router";
 
-export default class RegisterForm extends Block {
-  constructor() {
+// Создаём экземпляр (синглтон внутри класса вернёт тот же роутер)
+const router = new Router(".app");
+
+class RegisterForm extends Block {
+  constructor(props: any = {}) {
     super({
       id: "register-form",
       class: "auth-container__form",
@@ -67,11 +73,12 @@ export default class RegisterForm extends Block {
           label: "Повторите пароль:",
           required: true,
         },
-      ]
+      ],
+      ...props,
     });
 
     this.events = {
-      submit: (e: Event) => {
+      submit: async (e: Event) => {
         e.preventDefault();
 
         const formBlock = this.children.find(
@@ -86,7 +93,7 @@ export default class RegisterForm extends Block {
         // Сначала базовая валидация полей (required, формат и т.п.)
         const isValid = formBlock.validate();
         if (!isValid) {
-          console.log("Форма содержит ошибки валидации полей.");
+          //console.log("Форма содержит ошибки валидации полей.");
           return;
         }
 
@@ -95,13 +102,44 @@ export default class RegisterForm extends Block {
         const repeatPassword = formBlock.formData.repeat_password;
 
         if (password !== repeatPassword) {
-          console.log("Пароли не совпадают.");
-
+          //console.log("Пароли не совпадают.");
+          this.setProps({
+            error: "Пароли не совпадают",
+          });
           return;
         }
+        
+        // Собираем данные (убираем лишнее для API поле repeat_password)
+        const formData = formBlock.formData as unknown as SignUpRequest;
 
-        console.log("Данные регистрации успешно собраны для API:", formBlock.formData);
-        router.go("/chats");
+        // Извлекаем ненужный для API пароль повтора, сохраняя остальные поля в signUpData
+        const { repeat_password, ...signUpData } = formData;
+
+        try {
+          // 3. Вызываем метод создания пользователя напрямую из контроллера
+          await UserController.signup(signUpData);
+          
+          router.go("/chats");
+        } catch (error: any) {
+          console.error("Ошибка регистрации:", error);
+          
+          let errorMessage = "Не удалось зарегистрироваться. Попробуйте позже.";
+          
+          if (error?.response) {
+            try {
+              const parsed = JSON.parse(error.response);
+              if (parsed.reason) {
+                errorMessage = parsed.reason; // Берем текст ошибки с бэкенда Практикума
+              }
+            } catch {
+              // Игнорируем ошибку парсинга
+            }
+          }
+
+          this.setProps({
+            error: errorMessage,
+          });
+        }
       },
     };
   }
@@ -125,4 +163,18 @@ export default class RegisterForm extends Block {
       </section>
     </main>
   `;
+
+  protected componentDidMount() {
+    const link = this.element()?.querySelector('.router-link');
+    if (link) {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        router.go('/');
+      });
+    }
+  }
 }
+
+export default connect((state) => ({
+  user: state.user ?? null,
+}))(RegisterForm);

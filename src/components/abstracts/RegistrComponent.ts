@@ -46,7 +46,13 @@ export function registerComponent<Props extends BlockOwnProps>(
             );
           }
 
-          placeholder.replaceWith(element);
+          if (placeholder.parentNode) {
+            placeholder.replaceWith(element);
+          } else {
+            console.warn(
+              `[registerComponent] Предотвращено падение: placeholder для ${Component.componentName} уже был удален или заменен.`
+            );
+          }
         },
       });
 
