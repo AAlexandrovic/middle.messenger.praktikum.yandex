@@ -55,7 +55,28 @@ router
     .finally(() => {
         router.start();
 
-        // После старта проверяем: если юзера нет и мы на приватной странице — редирект
+        //Убираем весь перендер на глобальном уровне
+        window.addEventListener('click', (e) => {
+            const target = e.target as HTMLElement;
+            
+            // Находим ближайший тег <a> с классом 'router-link'
+            const link = target.closest('a.router-link');
+            
+            if (link) {
+                // Отменяем нативное поведение браузера (полную перезагрузку вкладки)
+                e.preventDefault();
+                
+                // Читаем чистый путь перехода из href 
+                const url = link.getAttribute('href');
+                
+                if (url) {
+                    // Командуем нашему роутеру переключить страницу в режиме SPA
+                    router.go(url);
+                }
+            }
+        });
+
+        // После старта проверяем: если юзера нет и мы на приватной странице - редирект
         const state = store.getState();
         const currentPath = window.location.pathname;
         const protectedRoutes = ['/chats', '/settings'];
