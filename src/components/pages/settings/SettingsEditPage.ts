@@ -4,6 +4,7 @@ import Router from "../../services/Router";
 import { connect } from "../../api/HOC/connect";
 import { type ProfileUpdateRequest} from "../../api/Models/user-api";
 import UserController from "../../api/controllers/UserController";
+import { RESOURCES_URL } from "../../api/config";
 
 const router = new Router(".app");
 
@@ -56,7 +57,7 @@ class SettingsEditPage extends Block<SettingsEditProps> {
       displayName: user.displayName,
       // Превращаем относительный путь Практикума в валидный URL для тега img
       avatar: user.avatar       
-      ? `https://ya-praktikum.tech/api/v2/resources/${user.avatar}` 
+      ? `${RESOURCES_URL}${user.avatar}` 
       : 'https://placeholder.com'
     };
   }

@@ -4,6 +4,8 @@ import store from '../store';
 
 class UserController {
   public signin(data: SignInRequest) {
+    //Очищаем все данные если пользователь заходит с того же компьютера
+    store.clear();
     return UserAPI.signin(data)
       .then(() => this.getUser())
       .catch((error) => {
@@ -33,6 +35,7 @@ class UserController {
 
     public async signup(data: SignUpRequest) {
     try {
+      store.clear();
       //Создаем пользователя
       await UserAPI.create(data);
       

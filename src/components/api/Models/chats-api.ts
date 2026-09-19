@@ -3,7 +3,7 @@ import { BaseAPI } from '../base-api';
 import { UserDTO } from './user-api';
 
 // Создаем инстанс транспорта для чатов (базовый URL Яндекса)
-const chatAPIInstance = new HTTPTransport('https://ya-praktikum.tech/api/v2');
+const chatAPIInstance = new HTTPTransport();
 
 // Структура последнего сообщения
 export interface LastMessageDTO {
@@ -82,8 +82,17 @@ class ChatsAPI extends BaseAPI {
           throw new Error('ChatAPI.delete is not implemented');
         }
 
-        delete(): Promise<unknown> {
-            throw new Error('ChatAPI.delete is not implemented');
+        //Обновление аватара чата
+        public updateChatAvatar(data: FormData): Promise<ChatDTO> {
+          return chatAPIInstance.put<ChatDTO>('/chats/avatar', { data });
+        }
+
+        public delete(chatId: number): Promise<unknown> {
+          return chatAPIInstance.delete<unknown>('/chats', {
+            data: { 
+              chatId 
+            }
+          });
         }
 }
 

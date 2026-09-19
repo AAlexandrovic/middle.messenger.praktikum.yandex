@@ -2,6 +2,7 @@ import Block from "../../abstracts/Block";
 import Router from "../../services/Router";
 import { connect } from "../../api/HOC/connect";
 import UserController from "../../api/controllers/UserController";
+import { RESOURCES_URL } from "../../api/config";
 
 const router = new Router(".app");
 
@@ -39,7 +40,7 @@ class SettingsPage extends Block<SettingsPageProps> {
                 <section class="settings-profile">
                     
                     <div class="settings-profile__avatar-container">
-                        <img src="https://ya-praktikum.tech/api/v2/resources{{settingsPage.user.avatar}}" alt="Аватар пользователя" class="settings-profile__avatar">
+                        <img src="{{settingsPage.user.avatar}}" alt="Аватар пользователя" class="settings-profile__avatar">
                         <h1 class="settings-profile__title">{{settingsPage.user.displayName}}</h1>
                     </div>
 
@@ -112,7 +113,9 @@ export default connect((state) => {
   return {
     settingsPage: {
       user: {
-        avatar: user.avatar ?? '',
+        avatar: user.avatar 
+          ? `${RESOURCES_URL}${user.avatar}` 
+          : 'https://placeholder.co',
         displayName: user.display_name ?? user.first_name ?? 'Пользователь',
         firstName: user.first_name ?? '',
         secondName: user.second_name ?? '',

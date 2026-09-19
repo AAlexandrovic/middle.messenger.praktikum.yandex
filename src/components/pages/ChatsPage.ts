@@ -4,6 +4,7 @@ import Router from "../services/Router";
 import { connect } from '../api/HOC/connect';
 import ChatsController from "../api/controllers/ChatsController";
 import store from "../api/store";
+import { RESOURCES_URL } from "../api/config";
 
 const router = new Router(".app");
 
@@ -134,7 +135,7 @@ class ChatsPage extends Block<ChatsPageProps> {
       click: async (event: Event) => {
         const target = event.target as HTMLElement;
 
-        // НОВОЕ: Обработка клика по кнопке "Добавить пользователя"
+        // Обработка клика по кнопке "Добавить пользователя"
         if (target.classList.contains('chat-window__add-user-btn')) {
           event.preventDefault();
           
@@ -186,6 +187,35 @@ class ChatsPage extends Block<ChatsPageProps> {
             return;
         }
 
+        // Удаление чата
+        if (target.classList.contains('chat-window__delete-chat-btn')) {
+          event.preventDefault();
+          
+          const activeChatId = store.getState().activeChatId as number | null;
+          const chatsPageData = this.props.chatsPage;
+          const chatName = chatsPageData?.activeChat?.name || 'этот';
+
+          if (!activeChatId) {
+            alert('Не выбран активный чат для удаления.');
+            return;
+          }
+
+          const isConfirmed = confirm(`Вы уверены, что хотите НАВСЕГДА УДАЛИТЬ чат "${chatName}"?`);
+          if (!isConfirmed) return;
+
+          try {
+            // Передаем числовой ID в контроллер
+            await ChatsController.deleteChat(activeChatId);
+            
+            alert(`Чат "${chatName}" успешно удален.`);
+            
+            router.go('/chats');
+          } catch (error: any) {
+            alert(`Ошибка при удалении чата: ${error.message || 'Не удалось удалить чат.'}`);
+          }
+          return;
+        }
+
         // Стандартный выбор чата в сайдбаре
         const item = target.closest('.chats-list__item');
         if (item) {
@@ -193,6 +223,41 @@ class ChatsPage extends Block<ChatsPageProps> {
           const chatTitle = item.getAttribute('data-title'); 
           if (chatTitle) {
             router.go(`/chats?title=${encodeURIComponent(chatTitle)}`);
+          }
+        }
+      },
+
+      //Перехватываем загрузку файла:
+      change: async (event: Event) => {
+        const input = event.target as HTMLInputElement;
+
+        // Проверяем, что событие произошло именно на инпуте аватара чата и файл выбран
+        if (input && input.id === 'chat-avatar-input' && input.files && input.files.length > 0) {
+          event.preventDefault();
+
+          // Достаем ID активного чата из глобального Store
+          const activeChatId = store.getState().activeChatId as number | null;
+          if (!activeChatId) {
+            alert('Не выбран активный чат.');
+            return;
+          }
+
+          const file = input.files[0];
+          const formData = new FormData();
+          
+          // Наполняем FormData строго по ТЗ
+          formData.append('chatId', String(activeChatId)); // Спецификация ждёт chatId
+          formData.append('avatar', file);                // Спецификация ждёт файл под ключом avatar
+
+          try {
+            // Отправляем в контроллер
+            await ChatsController.updateChatAvatar(formData);
+            alert('Аватар чата успешно изменен!');
+          } catch (error) {
+            alert('Не удалось обновить аватар чата. Возможно, вы не являетесь создателем чата.');
+          } finally {
+            // Обязательно сбрасываем значение инпута, чтобы можно было загрузить этот же файл повторно
+            input.value = '';
           }
         }
       }
@@ -266,7 +331,13 @@ class ChatsPage extends Block<ChatsPageProps> {
           {{#if chatsPage.activeChat.id}}
             <!-- Отображаем сообщения -->
             <header class="chat-window__header">
+            <div style="display: flex; align-items: center; gap: 15px;">
+              <label for="chat-avatar-input" class="chat-window__avatar-label" title="Поменять аватар чата" style="cursor: pointer; position: relative;">
+                <img src="{{chatsPage.activeChat.avatar}}" alt="Аватар чата" class="chat-window__avatar-img"/>
+                <input type="file" id="chat-avatar-input" class="chat-avatar-input" accept="image/*" />
+              </label>
               <h3 class="chat-window__title">{{chatsPage.activeChat.name}}</h3>
+            </div>
 
             <!-- Кнопка добавления пользователя по логину -->
               <div class="chat-window__controls">
@@ -277,6 +348,10 @@ class ChatsPage extends Block<ChatsPageProps> {
               <!-- Кнопка удаления пользователя из чата -->
                 <button class="chat-window__delete-user-btn">
                   ❌ Удалить пользователя
+                </button>
+
+                <button class="chat-window__delete-chat-btn">
+                  🗑️ Удалить чат
                 </button>
               </div>
             </header>
@@ -335,7 +410,7 @@ export default connect((state) => {
     chatsPage: {
       currentUser: {
         name: user?.first_name || 'Пользователь',
-        avatar: user?.avatar ? `https://ya-praktikum.tech/api/v2/resources${user.avatar}` : 'https://placeholder.co'
+        avatar: user?.avatar ? `${RESOURCES_URL}${user.avatar}` : 'https://placeholder.co'
       },
       chats: chats.map(chat => ({
         id: chat.id,
@@ -346,11 +421,14 @@ export default connect((state) => {
         time: chat.last_message?.time 
           ? new Date(chat.last_message.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
           : '',
-        avatar: chat.avatar ? `https://ya-praktikum.tech/api/v2/resources${chat.avatar}` : 'https://placeholder.co'
+        avatar: chat.avatar ? `${RESOURCES_URL}${chat.avatar}` : 'https://placeholder.co'
       })),
       activeChat: {
         id: activeChatId,
         name: activeChat?.title || '', 
+        avatar: activeChat?.avatar 
+          ? `${RESOURCES_URL}${activeChat.avatar}?v=${Date.now()}` 
+          : 'https://placeholder.co',
         messages: messages.map(msg => ({
           id: msg.id,
           text: msg.content,

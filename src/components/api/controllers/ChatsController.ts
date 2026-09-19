@@ -156,6 +156,42 @@ class ChatsController {
         throw error;
       }
     }
+
+  public async deleteChat(chatId: number): Promise<void> {
+    try {
+      await ChatsAPI.delete(chatId);
+      
+      console.log(`Чат #${chatId} успешно удален`);
+      
+      //Закрываем окно чата если этот чат был удалён
+      const currentActiveId = store.getState().activeChatId as number | null;
+      if (currentActiveId === chatId) {
+        store.setState('activeChatId', null);
+        
+      }
+
+      //  Обновляем список чатов
+      await this.fetchChats(true);
+
+    } catch (error) {
+      console.error('Ошибка при удалении чата в контроллере:', error);
+      throw error;
+    }
+  }
+
+  //Обновление аватара чата
+    public async updateChatAvatar(data: FormData): Promise<void> {
+    try {
+      await ChatsAPI.updateChatAvatar(data);
+      console.log('Аватар чата успешно обновлен на сервере');
+
+      //Обновляем список чатов
+      await this.fetchChats(true);
+    } catch (error) {
+      console.error('Ошибка обновления аватара чата в контроллере:', error);
+      throw error;
+    }
+  }
 }
 
 export default new ChatsController();

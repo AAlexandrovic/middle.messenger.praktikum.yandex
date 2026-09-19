@@ -1,4 +1,3 @@
-// base-api.ts
 export abstract class BaseAPI {
   // Используем дженерик или any для аргументов, чтобы не ломать наследование
   abstract create(...args: any[]): Promise<unknown>;

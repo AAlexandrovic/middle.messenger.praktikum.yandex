@@ -79,13 +79,21 @@ class Store {
     this.emit();
   }
 
-   public subscribe(listener: Listener): () => void {
+  public subscribe(listener: Listener): () => void {
     this.listeners.add(listener);
     
     // Возвращаем функцию для отписки
     return () => {
       this.listeners.delete(listener);
     };
+  }
+
+  //Метод для полной очистки store добавил, тк убрал перезагрузку страницы
+  public clear(): void {
+    //Полностью обнуляем состояние приложения до чистого объекта
+    this.state = {};
+    
+    this.emit();
   }
 
   private emit() {

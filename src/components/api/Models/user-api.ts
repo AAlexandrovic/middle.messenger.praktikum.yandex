@@ -1,7 +1,7 @@
   import HTTPTransport from '../HTTPTransport';
   import { BaseAPI } from '../base-api';
 
-  const chatAPIInstance = new HTTPTransport('https://ya-praktikum.tech/api/v2');
+  const chatAPIInstance = new HTTPTransport();;
 
 
     export interface SignInRequest extends Record<string, unknown> {

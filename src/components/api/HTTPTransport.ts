@@ -1,3 +1,5 @@
+import { BASE_URL } from './config'; // Укажите ваш правильный относительный путь к файлу конфигурации
+
 export enum METHODS {
   GET = 'GET',
   POST = 'POST',
@@ -13,6 +15,9 @@ type RequestOptions = {
   responseType?: XMLHttpRequestResponseType;
   withCredentials?: boolean;
 };
+
+// Единый тип для http-методов,
+type HTTPMethod = <R = unknown>(url: string, options?: Omit<RequestOptions, 'method'>) => Promise<R>;
 
 function queryStringify(data: Record<string, unknown>): string {
   if (!data || typeof data !== 'object') {
@@ -39,37 +44,40 @@ function queryStringify(data: Record<string, unknown>): string {
     .join('&');
 }
 
-class HTTPTransport {
+export class HTTPTransport {
   private readonly baseURL: string;
   private readonly defaultTimeout = 5000;
 
-  constructor(baseURL: string = '') {
+  //Если baseURL не передан, по умолчанию берется глобальный BASE_URL из конфига
+  constructor(baseURL: string = BASE_URL) {
     this.baseURL = baseURL;
   }
 
-  get<T = any>(url: string, options: Omit<RequestOptions, 'method'> = {}): Promise<T> {
-    return this.request<T>(url, { ...options, method: METHODS.GET });
-  }
+  // Используем тип HTTPMethod, удаляя дублирование типов аргументов.
+  public get: HTTPMethod = (url, options = {}) => (
+    this.request(url, { ...options, method: METHODS.GET }, options.timeout)
+  );
 
-  post<T = any>(url: string, options: Omit<RequestOptions, 'method'> = {}): Promise<T> {
-    return this.request<T>(url, { ...options, method: METHODS.POST });
-  }
+  public post: HTTPMethod = (url, options = {}) => (
+    this.request(url, { ...options, method: METHODS.POST }, options.timeout)
+  );
 
-  put<T = any>(url: string, options: Omit<RequestOptions, 'method'> = {}): Promise<T> {
-    return this.request<T>(url, { ...options, method: METHODS.PUT });
-  }
+  public put: HTTPMethod = (url, options = {}) => (
+    this.request(url, { ...options, method: METHODS.PUT }, options.timeout)
+  );
 
-  delete<T = any>(url: string, options: Omit<RequestOptions, 'method'> = {}): Promise<T> {
-    return this.request<T>(url, { ...options, method: METHODS.DELETE });
-  }
+  public delete: HTTPMethod = (url, options = {}) => (
+    this.request(url, { ...options, method: METHODS.DELETE }, options.timeout)
+  );
 
-  request<T = any>(
+  // Основной метод запроса 
+  private request<T = unknown>(
     url: string,
     options: RequestOptions,
     timeout: number = this.defaultTimeout
   ): Promise<T> {
     const fullURL = `${this.baseURL}${url}`;
-    const { headers = {}, method, data, responseType, withCredentials = true  } = options;
+    const { headers = {}, method, data, responseType, withCredentials = true } = options;
 
     if (!method) {
       return Promise.reject(new Error('HTTP method is required'));
@@ -79,14 +87,12 @@ class HTTPTransport {
       const xhr = new XMLHttpRequest();
       const isGet = method === METHODS.GET;
 
-      // Формируем URL для GET с query-параметрами
       const finalUrl = isGet && data && typeof data === 'object' && !(data instanceof FormData)
         ? `${fullURL}?${queryStringify(data)}`
         : fullURL;
 
       xhr.open(method, finalUrl);
 
-      // Разрешаем принимать cookie
       xhr.withCredentials = withCredentials;
 
       if (responseType) {
@@ -127,21 +133,15 @@ class HTTPTransport {
         }
       };
 
-      xhr.onabort = () =>
-        reject({ reason: 'Request aborted', request: xhr });
-
-      xhr.onerror = () =>
-        reject({ reason: 'Network error', request: xhr });
-
-      xhr.ontimeout = () =>
-        reject({ reason: 'Request timeout', timeout, request: xhr });
+      xhr.onabort = () => reject({ reason: 'Request aborted', request: xhr });
+      xhr.onerror = () => reject({ reason: 'Network error', request: xhr });
+      xhr.ontimeout = () => reject({ reason: 'Request timeout', timeout, request: xhr });
 
       xhr.timeout = timeout;
 
       if (isGet || !data) {
         xhr.send();
       } else if (data instanceof FormData) {
-        // FormData сам выставит правильный Content-Type с boundary
         xhr.send(data);
       } else if (typeof data === 'object') {
         const hasContentType = Object.keys(headers).some(
