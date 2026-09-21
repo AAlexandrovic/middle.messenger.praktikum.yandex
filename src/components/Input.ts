@@ -122,7 +122,8 @@ export class Input extends Block<InputProps> {
 
     if (name === 'repeat_password') {
       const form = this.element()?.closest('form');
-      const pwdEl = form?.querySelector<HTMLInputElement>('input[name="password"]');
+      const pwdEl = form?.querySelector<HTMLInputElement>('input[name="new_password"]') 
+               || form?.querySelector<HTMLInputElement>('input[name="password"]');
       const originalPassword = pwdEl?.value ?? '';
 
       if (!value) {

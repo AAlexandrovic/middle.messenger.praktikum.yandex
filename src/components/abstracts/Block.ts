@@ -18,7 +18,7 @@ export interface BlockOwnProps extends Object {
 export default abstract class Block<
   Props extends BlockOwnProps = BlockOwnProps,
 > {
-  protected abstract template: string;
+  protected template: string = '';
 
   protected props = {} as Props;
 
@@ -31,6 +31,12 @@ export default abstract class Block<
 
   // изменил на public, чтобы страницы могли читать children
   public children: Block<BlockOwnProps>[] = [];
+
+  //Проверяем отренедрен уже элемент или нет
+  private _isRenderPending = false;
+
+  // Cкрыт элемент или нет
+  private _isHidden = false;
 
   constructor(props: Props = {} as Props) {
     this.props = props;
@@ -98,7 +104,9 @@ export default abstract class Block<
     const fragment = this.compile();
 
     if (this.domElement && fragment) {
-      this.domElement.replaceWith(fragment);
+      if (this.domElement.parentNode) {
+        this.domElement.replaceWith(fragment);
+      }
     }
 
     this.domElement = fragment;
@@ -134,14 +142,47 @@ export default abstract class Block<
       defaultRefs,
     );
 
-    return templateElement.content.firstElementChild;
+    const result = templateElement.content.firstElementChild;
+    
+    if (result && this._isHidden) {
+      (result as HTMLElement).style.display = "none";
+    }
+
+    return result;
   }
 
   // метод для обновления свойств компонента
   public setProps(props: Partial<Props>) {
-    /** Мёржим обновляемые свойства */
     this.props = { ...this.props, ...props, __children: [], __refs: {} };
-    /** Вызываем метод render, обновляя представление в DOM-дереве */
-    this.render();
+
+    // Если рендер уже запланирован в текущем цикле, просто пропускаем дублирующий вызов
+    if (this._isRenderPending) {
+      return;
+    }
+
+    this._isRenderPending = true;
+
+    // Планируем рендер в очередь микротасков (выполнится сразу после текущего синхронного кода)
+    Promise.resolve().then(() => {
+      this.render();
+      this._isRenderPending = false; // сбрасываем флаг после успешного рендера
+    });
+  }
+
+  //Методы отображения и скрытия элементов
+  hide(): void {
+    this._isHidden = true;
+    const el = this.element();
+    if (el) {
+      (el as HTMLElement).style.display = "none";
+    }
+  }
+
+  show(): void {
+    this._isHidden = false;
+    const el = this.element();
+    if (el) {
+      (el as HTMLElement).style.display = "";
+    }
   }
 }
