@@ -267,30 +267,40 @@ class ChatsPage extends Block<ChatsPageProps> {
   
   //Первая загрузка списка всех чатов
   protected componentDidMount(): void {
-    ChatsController.fetchChats().then(() => {
-      // Проверяем наличие параметра title в URL при входе
+    ChatsController.fetchChats();
+    // ChatsController.fetchChats().then(() => {
+    //   // Проверяем наличие параметра title в URL при входе
+    //   const query = this.props.queryParams;
+    //   if (query?.title) {
+    //     ChatsController.selectChatByTitle(query.title);
+    //   }
+    // });
+          // Проверяем наличие параметра title в URL при входе
       const query = this.props.queryParams;
       if (query?.title) {
         ChatsController.selectChatByTitle(query.title);
       }
-    });
   }
 
   //Отображаем выбранный чат
   protected componentDidUpdate(oldProps: any, newProps: any): boolean {
-  const oldTitle = oldProps.queryParams?.title || '';
-  const newTitle = newProps.queryParams?.title || '';
+  // const oldTitle = oldProps.queryParams?.title || '';
+  // const newTitle = newProps.queryParams?.title || '';
 
-  if (newTitle !== oldTitle) {
-    if (newTitle) {
-      ChatsController.selectChatByTitle(newTitle);
-    } else {
-      store.setState('activeChatId', null);
-      store.setState('messages', []);
+  // if (newTitle !== oldTitle) {
+  //   if (newTitle) {
+  //     ChatsController.selectChatByTitle(newTitle);
+  //   } else {
+  //     store.setState('activeChatId', null);
+  //     store.setState('messages', []);
+  //   }
+  //   return true; 
+  // }
+  // return false;
+      if (JSON.stringify(oldProps.chatsPage) !== JSON.stringify(newProps.chatsPage)) {
+      return true; 
     }
-    return true; 
-  }
-  return false;
+    return false;
   }
 
 

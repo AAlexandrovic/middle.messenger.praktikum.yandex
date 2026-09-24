@@ -94,6 +94,11 @@ class ChatsAPI extends BaseAPI {
             }
           });
         }
+
+        //Получаем токе чата
+        public getChatToken(chatId: number): Promise<{ token: string }> {
+          return chatAPIInstance.post<{ token: string }>(`/chats/token/${chatId}`, {});
+        }
 }
 
 export default new ChatsAPI();

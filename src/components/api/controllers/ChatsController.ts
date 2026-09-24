@@ -1,8 +1,10 @@
 import ChatsAPI from '../Models/chats-api';
 import UserAPI from '../Models/user-api';
 import store from '../store';
+import { WS_BASE_URL } from '../config';
 
 class ChatsController {
+   private _activeSocket: WebSocket | null = null;
 
   public async fetchChats(forceUpdate: boolean = false): Promise<void> {
     //Костыль для остановки лишних перерендеров
@@ -38,6 +40,17 @@ class ChatsController {
         return;
       }
 
+           // 1. ЗАЩИТА: Если этот чат уже открыт И сокет находится в рабочем состоянии, 
+      // просто выходим, чтобы не пересоздавать подключение при каждом обновлении пропсов
+      if (
+        currentActiveChat && 
+        currentActiveChat.title === title && 
+        this._activeSocket && 
+        (this._activeSocket.readyState === WebSocket.OPEN || this._activeSocket.readyState === WebSocket.CONNECTING)
+      ) {
+        return;
+      }
+
       const filteredChats = await ChatsAPI.getChatByTitle(title);
 
       if (!filteredChats || filteredChats.length === 0) {
@@ -50,9 +63,74 @@ class ChatsController {
 
       //Передаём ChatId для отображения выбранного чата
       store.setState('activeChatId', targetChat.id);
+
+      // 2. Запускаем метод инициализации WebSocket соединения
+      await this._initWebSocket(targetChat.id);
     } catch (error) {
       console.error(`Ошибка selectChatByTitle для чата "${title}":`, error);
       store.setState('activeChatId', null);
+    }
+  }
+
+   private async _initWebSocket(chatId: number): Promise<void> {
+    const user = store.getState().user as any;
+    if (!user) {
+      console.error('[WebSocket] Пользователь не авторизован в системе');
+      return;
+    }
+
+    try {
+      // 1. Получаем токен доступа по API
+      const { token } = await ChatsAPI.getChatToken(chatId);
+
+      // 2. Перед созданием нового сокета — обязательно гасим предыдущий, если он был
+      this.closeActiveSocket();
+
+      // 3. Собираем URL и создаем нативный объект WebSocket
+      const wsUrl = `${WS_BASE_URL}/${user.id}/${chatId}/${token}`;
+      this._activeSocket = new WebSocket(wsUrl);
+
+      // 4. Реализуем обработчики из технического задания Практикума
+      this._activeSocket.addEventListener('open', () => {
+        console.log('Соединение установлено');
+
+        // Тестовая отправка сообщения миру при успешном коннекте
+        this._activeSocket?.send(JSON.stringify({
+          content: 'Моё первое сообщение миру!',
+          type: 'message',
+        }));
+      });
+
+      this._activeSocket.addEventListener('close', (event) => {
+        if (event.wasClean) {
+          console.log('Соединение закрыто чисто');
+        } else {
+          console.log('Обрыв соединения');
+        }
+        console.log(`Код: ${event.code} | Причина: ${event.reason}`);
+      });
+
+      this._activeSocket.addEventListener('message', (event) => {
+        // Пока просто выводим сырые данные в консоль, ничего не пишем в Store!
+        console.log('Получены данные', event.data);
+      });
+
+      this._activeSocket.addEventListener('error', (event: any) => {
+        console.log('Ошибка', event.message || event);
+      });
+
+    } catch (error) {
+      console.error('[WebSocket] Ошибка инициализации:', error);
+    }
+  }
+
+  /**
+   * Метод чистого закрытия сокета
+   */
+  public closeActiveSocket(): void {
+    if (this._activeSocket) {
+      this._activeSocket.close();
+      this._activeSocket = null;
     }
   }
 
