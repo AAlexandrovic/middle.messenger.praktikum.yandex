@@ -1,4 +1,4 @@
-  import HTTPTransport from '../HTTPTransport';
+  import HTTPTransport from '../services/HTTPTransport';
   import { BaseAPI } from '../base-api';
 
   const chatAPIInstance = new HTTPTransport();;

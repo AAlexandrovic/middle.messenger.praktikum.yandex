@@ -109,7 +109,7 @@ class ChatsPage extends Block<ChatsPageProps> {
           if (error) return;
 
           if (messageText) {
-           // ChatsController.sendMessage(messageText);
+            ChatsController.sendMessage(messageText);
             inputEl.value = '';
           }
         }
