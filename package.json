@@ -13,6 +13,9 @@
     "lint:ts:fix": "eslint --fix \"src/**/*.{ts,tsx,js,jsx}\" --max-warnings=0",
     "lint:css": "stylelint \"src/**/*.scss\"",
     "lint:css:fix": "stylelint --fix \"src/**/*.scss\"",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
     "check-types": "tsc --noEmit"
   },
   "engines": {
@@ -25,6 +28,7 @@
     "editorconfig-checker": "^6.1.1",
     "eslint": "^9.39.5",
     "eslint-plugin-import": "^2.32.0",
+    "jsdom": "^30.1.1",
     "postcss": "^8.5.26",
     "sass": "^1.102.0",
     "stylelint": "^17.14.1",
@@ -33,7 +37,8 @@
     "stylelint-order": "^8.1.1",
     "stylelint-scss": "^7.2.0",
     "typescript": "~6.0.2",
-    "vite": "^8.2.0"
+    "vite": "^8.2.0",
+    "vitest": "^5.0.2"
   },
   "dependencies": {
     "handlebars": "^4.7.9"
