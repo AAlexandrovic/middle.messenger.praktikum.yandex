@@ -15,6 +15,9 @@
 - `lint:ts:fix` — Проверка и исправление ts файлов.
 - `lint:css:fix` — Проверка и исправление css файлов.
 
+## pre-commit
+После развёрывания проекта нужно выполнить команду - `npm run prepare` она активирует husky при создании коммита
+
 ## **Ссылки**
 
 gitHub — https://github.com/AAlexandrovic/middle.messenger.praktikum.yandex.git
