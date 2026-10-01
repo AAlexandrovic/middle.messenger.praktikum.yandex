@@ -133,6 +133,7 @@ export class Input extends Block<InputProps> {
       }
     } else {
       if (typeof validateField !== 'function') {
+        // eslint-disable-next-line no-console
         console.error('[Input] validateField is undefined');
         return true; // fallback
       }

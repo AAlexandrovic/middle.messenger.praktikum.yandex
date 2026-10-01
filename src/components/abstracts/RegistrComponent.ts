@@ -49,6 +49,7 @@ export function registerComponent<Props extends BlockOwnProps>(
           if (placeholder.parentNode) {
             placeholder.replaceWith(element);
           } else {
+            // eslint-disable-next-line no-console
             console.warn(
               `[registerComponent] Предотвращено падение: placeholder для ${Component.componentName} уже был удален или заменен.`
             );

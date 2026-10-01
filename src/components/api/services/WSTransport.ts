@@ -9,9 +9,9 @@ export enum WSTransportEvents {
 
 export class WSTransport {
   private _socket: WebSocket | null = null;
-  private _pingInterval: any = null;
+  private _pingInterval: ReturnType<typeof setInterval> | null = null;
   private _url: string;
-  private _callbacks: Record<string, Array<(data?: any) => void>> = {};
+  private _callbacks: Record<string, Array<(data?: unknown) => void>> = {};
 
   constructor(userId: number, chatId: number, token: string) {
     this._url = `${WS_BASE_URL}/${userId}/${chatId}/${token}`;
@@ -61,14 +61,14 @@ export class WSTransport {
   /**
    * Подписка на кастомные события сокета
    */
-  public on(event: WSTransportEvents, callback: (data?: any) => void): void {
+  public on(event: WSTransportEvents, callback: (data?: unknown) => void): void {
     if (!this._callbacks[event]) {
       this._callbacks[event] = [];
     }
     this._callbacks[event].push(callback);
   }
 
-  private _emit(event: WSTransportEvents, data?: any): void {
+  private _emit(event: WSTransportEvents, data?: unknown): void {
     if (this._callbacks[event]) {
       this._callbacks[event].forEach((callback) => callback(data));
     }
@@ -98,6 +98,7 @@ export class WSTransport {
 
         this._emit(WSTransportEvents.Message, data);
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('Ошибка парсинга WebSocket сообщения:', error);
       }
     });

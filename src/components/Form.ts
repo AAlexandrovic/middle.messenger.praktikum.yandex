@@ -38,9 +38,10 @@ export class Form extends Block<FormProps> {
 
     let allValid = true;
     inputs.forEach((input) => {
-      const block = this.children.find(
-        (c) => (c as any).props?.id === input.id
-      ) as Input | undefined;
+      const block = this.children.find((c) => {
+        const componentWithProps = c as unknown as { props: Record<string, unknown> };
+        return componentWithProps.props?.id === input.id;
+      }) as Input | undefined;
 
       if (block && typeof block.handleValidate === 'function') {
         const isValid = block.handleValidate(input.value);

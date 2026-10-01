@@ -21,6 +21,7 @@ const router = new Router(".app");
 
 // Перехватываем ошибки для вызова 500 страницы
 function handleGlobalError(error: unknown) {
+    // eslint-disable-next-line no-console
     console.error("Перехвачена критическая ошибка приложения:", error);
     router.go("/500");
 }

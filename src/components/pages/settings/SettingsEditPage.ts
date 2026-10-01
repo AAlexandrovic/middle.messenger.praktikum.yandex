@@ -77,8 +77,8 @@ class SettingsEditPage extends Block<SettingsEditProps> {
     if (JSON.stringify(oldProps.settingsPage?.user) !== JSON.stringify(newProps.settingsPage?.user)) {
       
       const formBlock = this.children.find(
-        (c) => (c as any).constructor?.componentName === "Form"
-      ) as Block<any> | undefined;
+        (c) => ((c as unknown as { constructor: { componentName?: string } }).constructor?.componentName === "Form")
+      ) as Block<Record<string, unknown>> | undefined;
 
       if (formBlock) {
         // Передаем измененные данные прямо в форму. 
@@ -103,7 +103,8 @@ class SettingsEditPage extends Block<SettingsEditProps> {
 
       try {
         await UserController.updateAvatar(formData);
-      } catch (error) {
+      } catch (error: unknown) {
+        // eslint-disable-next-line no-console
         console.error("Ошибка обновления аватара:", error);
         this.setProps({ error: "Не удалось загрузить аватар." });
       }
@@ -112,7 +113,9 @@ class SettingsEditPage extends Block<SettingsEditProps> {
 
   private async handleSubmit(e: Event) {
     e.preventDefault();
-    const formBlock = this.children.find((c) => (c as any).constructor?.componentName === "Form") as Form | undefined;
+    const formBlock = this.children.find(
+      (c) => ((c as unknown as { constructor: { componentName?: string } }).constructor?.componentName === "Form")
+    ) as Form | undefined;
     if (!formBlock || !formBlock.validate()) return;
 
     const profileFormData = formBlock.formData as Record<string, string>;
@@ -131,7 +134,9 @@ class SettingsEditPage extends Block<SettingsEditProps> {
     try {
       await UserController.updateProfile(updatedProfile);
       router.go("/settings");
-    } catch (error) {
+    } catch (error: unknown) {
+      // eslint-disable-next-line no-console
+      console.error("Ошибка обновления профиля:", error);
       this.setProps({ error: "Не удалось обновить данные профиля." });
     }
   }
@@ -166,20 +171,20 @@ class SettingsEditPage extends Block<SettingsEditProps> {
   `;
 }
 
-export default connect((state) => {
-  const user = state.user as any;
+export default connect((state: Record<string, unknown>) => {
+  const user = state.user as Record<string, unknown> | null;
   if (!user) return { settingsPage: { user: null } };
 
   return {
     settingsPage: {
       user: {
-        login: user.login ?? '',
-        avatar: user.avatar ?? '',
-        displayName: user.display_name ?? user.first_name ?? '',
-        firstName: user.first_name ?? '',
-        secondName: user.second_name ?? '',
-        email: user.email ?? '',
-        phone: user.phone ?? '',
+        login: (user.login as string) ?? '',
+        avatar: (user.avatar as string) ?? '',
+        displayName: (user.display_name as string) ?? (user.first_name as string) ?? '',
+        firstName: (user.first_name as string) ?? '',
+        secondName: (user.second_name as string) ?? '',
+        email: (user.email as string) ?? '',
+        phone: (user.phone as string) ?? '',
       }
     }
   };

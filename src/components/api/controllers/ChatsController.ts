@@ -8,7 +8,7 @@ class ChatsController {
 
   public async fetchChats(forceUpdate: boolean = false): Promise<void> {
     //Костыль для остановки лишних перерендеров
-    const currentChats = store.getState().chats as any[] || [];
+    const currentChats = store.getState().chats as Record<string, unknown>[] || [];
 
     if (currentChats.length > 0 && !forceUpdate) {
       return;
@@ -17,8 +17,8 @@ class ChatsController {
     try {
       const chats = await ChatsAPI.getChats();
       store.setState('chats', chats);
-     // console.log(chats);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Ошибка fetchChats:', error);
     }
   }
@@ -30,7 +30,7 @@ class ChatsController {
   try {
       const currentState = store.getState();
       const currentActiveId = currentState.activeChatId as number | null;
-      const loadedChats = currentState.chats as any[] || [];
+      const loadedChats = currentState.chats as Record<string, unknown>[] || [];
 
       // Костыль от дублированных запросов
       const currentActiveChat = loadedChats.find(chat => chat.id === currentActiveId);
@@ -50,7 +50,6 @@ class ChatsController {
       }
 
       const targetChat = filteredChats[0];
-      //console.log(targetChat);
 
       //Передаём ChatId для отображения выбранного чата
       store.setState('activeChatId', targetChat.id);
@@ -58,6 +57,7 @@ class ChatsController {
       // 2. Запускаем метод инициализации WebSocket соединения
       await this._initWebSocket(targetChat.id);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error(`Ошибка selectChatByTitle для чата "${title}":`, error);
       store.setState('activeChatId', null);
     }
@@ -67,8 +67,11 @@ class ChatsController {
    *  Основной метод websocket
    */
    private async _initWebSocket(chatId: number): Promise<void> {
-    const user = store.getState().user as any;
-    if (!user) return;
+    const user = store.getState().user as Record<string, unknown>;
+    //строго проверяем что пришедший id это number
+    if (!user || typeof user.id !== 'number') {
+      return;
+    }
 
     try {
       const { token } = await ChatsAPI.getChatToken(chatId);
@@ -88,12 +91,18 @@ class ChatsController {
           return; 
         }
 
-        const currentMessages = store.getState().messages as any[] || [];
+        const currentMessages = store.getState().messages as Record<string, unknown>[] || [];
 
         if (Array.isArray(data)) {
           // Массив истории — разворачиваем и пушим в Store
           store.setState('messages', [...data.reverse(), ...currentMessages]);
-        } else if (data.type === 'message') {
+        } else if (
+          //Проводим строгую проверку на все свойства data
+          data && 
+          typeof data === 'object' && 
+          'type' in data && 
+          (data as Record<string, unknown>).type === 'message'
+        ) {
           // Одиночное новое сообщение — пушим в Store
           store.setState('messages', [...currentMessages, data]);
         }
@@ -101,6 +110,7 @@ class ChatsController {
 
       // 3. Вешаем обработчик на успешное подключение
       this._wsTransport.on(WSTransportEvents.Connected, () => {
+        // eslint-disable-next-line no-console
         console.log(`Успешно подключено к чату #${chatId}`);
         
         // Запрашиваем историю сообщений
@@ -114,6 +124,7 @@ class ChatsController {
       await this._wsTransport.connect();
 
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('[ChatsController] Ошибка инициализации WSTransport:', error);
     }
   }
@@ -121,6 +132,7 @@ class ChatsController {
   //Отправляем сообщение
   public sendMessage(content: string): void {
     if (!this._wsTransport) {
+      // eslint-disable-next-line no-console
       console.error('Невозможно отправить сообщение: WSTransport не инициализирован');
       return;
     }
@@ -131,6 +143,7 @@ class ChatsController {
         type: 'message',
       });
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Ошибка отправки сообщения через WSTransport:', error);
     }
 
@@ -151,9 +164,8 @@ class ChatsController {
       await ChatsAPI.create(title);
 
       await this.fetchChats(true); 
-      //console.log(chats);
-      //store.setState('chats', chats);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Ошибка fetchChats:', error);
     }
   }
@@ -197,7 +209,8 @@ class ChatsController {
       await ChatsAPI.addUsers([userId], chatId);
       
       return true;
-    } catch (error: any) {
+    } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Ошибка во флоу поиска и добавления пользователя:', error);
       throw error; 
     }
@@ -241,7 +254,8 @@ class ChatsController {
         
         return true; // Возвращаем true при успешном удалении!
 
-      } catch (error: any) {
+      } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('Ошибка во флоу удаления пользователя:', error);
         throw error;
       }
@@ -250,7 +264,7 @@ class ChatsController {
   public async deleteChat(chatId: number): Promise<void> {
     try {
       await ChatsAPI.delete(chatId);
-      
+      // eslint-disable-next-line no-console
       console.log(`Чат #${chatId} успешно удален`);
       
       //Закрываем окно чата если этот чат был удалён
@@ -264,6 +278,7 @@ class ChatsController {
       await this.fetchChats(true);
 
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Ошибка при удалении чата в контроллере:', error);
       throw error;
     }
@@ -273,11 +288,13 @@ class ChatsController {
     public async updateChatAvatar(data: FormData): Promise<void> {
     try {
       await ChatsAPI.updateChatAvatar(data);
+      // eslint-disable-next-line no-console
       console.log('Аватар чата успешно обновлен на сервере');
 
       //Обновляем список чатов
       await this.fetchChats(true);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Ошибка обновления аватара чата в контроллере:', error);
       throw error;
     }

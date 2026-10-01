@@ -39,10 +39,11 @@ class AuthForm extends Block {
         e.preventDefault();
 
         const formBlock = this.children.find(
-          (c) => (c as any)?.constructor?.componentName === 'Form'
+          (c) => ((c as unknown as { constructor: { componentName?: string } }).constructor?.componentName === 'Form')
         ) as Form | undefined;
 
         if (!formBlock) {
+          // eslint-disable-next-line no-console
           console.error('Form component not found!');
           return;
         }
@@ -63,17 +64,19 @@ class AuthForm extends Block {
           
           // Успех — редирект
           router.go('/chats');
-        } catch (error: any) {
+        } catch (error: unknown) {
+          // eslint-disable-next-line no-console
           console.error('Ошибка авторизации:', error);
 
           // Показываем сообщение об ошибке
           let errorMessage = 'Не удалось войти. Проверьте логин и пароль.';
+          const err = error as Record<string, unknown>;
 
-          if (error?.response) {
+          if (err && typeof err.response === 'string') {
             try {
-              const parsed = JSON.parse(error.response);
+              const parsed = JSON.parse(err.response) as Record<string, unknown>;
               if (parsed.reason) {
-                errorMessage = parsed.reason;
+                errorMessage = String(parsed.reason);
               }
             } catch {
               // ответ не JSON — оставляем дефолтное сообщение
