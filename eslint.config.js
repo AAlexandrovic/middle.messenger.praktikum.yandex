@@ -3,6 +3,16 @@ import tseslint from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
 
 export default [
+
+    {
+    ignores: [
+      '**/tests/**',
+      '**/*.test.ts',
+      '**/*.spec.ts',
+      '**/*.factory.ts',
+      'dist/**'
+    ]
+  },
   // Базовые правила для JS
   js.configs.recommended,
 
@@ -17,6 +27,10 @@ export default [
         project: './tsconfig.json',
         tsconfigRootDir: import.meta.dirname,
       },
+      globals: {
+        ...globals.browser,
+        ...globals.node
+      }
     },
     plugins: {
       '@typescript-eslint': tseslint,
