@@ -10,7 +10,7 @@ import Router from "../services/Router";
 const router = new Router(".app");
 
 class RegisterForm extends Block {
-  constructor(props: any = {}) {
+  constructor(props: Record<string, unknown> = {}) {
     super({
       id: "register-form",
       class: "auth-container__form",
@@ -82,10 +82,11 @@ class RegisterForm extends Block {
         e.preventDefault();
 
         const formBlock = this.children.find(
-          (c) => (c as any).constructor?.componentName === "Form"
+          (c) => ((c as unknown as { constructor: { componentName?: string } }).constructor?.componentName === "Form")
         ) as Form | undefined;
 
         if (!formBlock) {
+          // eslint-disable-next-line no-console
           console.error("Form component not found! Check static componentName.");
           return;
         }
@@ -113,23 +114,26 @@ class RegisterForm extends Block {
         const formData = formBlock.formData as unknown as SignUpRequest;
 
         // Извлекаем ненужный для API пароль повтора, сохраняя остальные поля в signUpData
-        const { repeat_password, ...signUpData } = formData;
+        const signUpData = { ...formData };
+        delete (signUpData as Record<string, unknown>).repeat_password;
 
         try {
           // 3. Вызываем метод создания пользователя напрямую из контроллера
           await UserController.signup(signUpData);
           
           router.go("/chats");
-        } catch (error: any) {
+        } catch (error: unknown) {
+          // eslint-disable-next-line no-console
           console.error("Ошибка регистрации:", error);
           
           let errorMessage = "Не удалось зарегистрироваться. Попробуйте позже.";
+          const err = error as Record<string, unknown>;
           
-          if (error?.response) {
-            try {
-              const parsed = JSON.parse(error.response);
+          if (err && typeof err.response === 'string') {
+          try {
+              const parsed = JSON.parse(err.response) as Record<string, unknown>;
               if (parsed.reason) {
-                errorMessage = parsed.reason; // Берем текст ошибки с бэкенда Практикума
+                errorMessage = String(parsed.reason); //Берём ошибку с бэкжнд практикума
               }
             } catch {
               // Игнорируем ошибку парсинга

@@ -1,12 +1,14 @@
 import ChatsAPI from '../Models/chats-api';
 import UserAPI from '../Models/user-api';
 import store from '../store';
+import { WSTransport, WSTransportEvents } from '../services/WSTransport';
 
 class ChatsController {
+   private _wsTransport: WSTransport | null = null;
 
   public async fetchChats(forceUpdate: boolean = false): Promise<void> {
     //Костыль для остановки лишних перерендеров
-    const currentChats = store.getState().chats as any[] || [];
+    const currentChats = store.getState().chats as Record<string, unknown>[] || [];
 
     if (currentChats.length > 0 && !forceUpdate) {
       return;
@@ -15,8 +17,8 @@ class ChatsController {
     try {
       const chats = await ChatsAPI.getChats();
       store.setState('chats', chats);
-     // console.log(chats);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Ошибка fetchChats:', error);
     }
   }
@@ -28,31 +30,132 @@ class ChatsController {
   try {
       const currentState = store.getState();
       const currentActiveId = currentState.activeChatId as number | null;
-      const loadedChats = currentState.chats as any[] || [];
+      const loadedChats = currentState.chats as Record<string, unknown>[] || [];
 
       // Костыль от дублированных запросов
       const currentActiveChat = loadedChats.find(chat => chat.id === currentActiveId);
 
-      //Проверяем на дубли запрос
-      if (currentActiveChat && currentActiveChat.title === title) {
+     // Проверка на дубликат (если чат уже открыт, ничего не делаем)
+      if (currentActiveChat && currentActiveChat.title === title && this._wsTransport) {
         return;
       }
 
       const filteredChats = await ChatsAPI.getChatByTitle(title);
 
       if (!filteredChats || filteredChats.length === 0) {
-        store.setState('activeChatId', null); // Сбрасываем, если не нашли
+        store.setState('activeChatId', null);
+        //Закрываем соединение
+        this.closeActiveSocket();
         return;
       }
 
       const targetChat = filteredChats[0];
-      //console.log(targetChat);
 
       //Передаём ChatId для отображения выбранного чата
       store.setState('activeChatId', targetChat.id);
+
+      // 2. Запускаем метод инициализации WebSocket соединения
+      await this._initWebSocket(targetChat.id);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error(`Ошибка selectChatByTitle для чата "${title}":`, error);
       store.setState('activeChatId', null);
+    }
+  }
+
+  /**
+   *  Основной метод websocket
+   */
+   private async _initWebSocket(chatId: number): Promise<void> {
+    const user = store.getState().user as Record<string, unknown>;
+    //строго проверяем что пришедший id это number
+    if (!user || typeof user.id !== 'number') {
+      return;
+    }
+
+    try {
+      const { token } = await ChatsAPI.getChatToken(chatId);
+
+      // Закрываем предыдущую сессию чисто
+      this.closeActiveSocket();
+      store.setState('messages', []);
+
+      // 1. Создаем экземпляр нашего вынесенного WebSocket-транспорта
+      this._wsTransport = new WSTransport(user.id, chatId, token);
+
+      // 2. Вешаем обработчик на получение данных
+      this._wsTransport.on(WSTransportEvents.Message, (data) => {
+        //проверяем актуальность открытого чата
+        const currentActiveChatId = store.getState().activeChatId as number | null;
+        if (chatId !== currentActiveChatId) {
+          return; 
+        }
+
+        const currentMessages = store.getState().messages as Record<string, unknown>[] || [];
+
+        if (Array.isArray(data)) {
+          // Массив истории — разворачиваем и пушим в Store
+          store.setState('messages', [...data.reverse(), ...currentMessages]);
+        } else if (
+          //Проводим строгую проверку на все свойства data
+          data && 
+          typeof data === 'object' && 
+          'type' in data && 
+          (data as Record<string, unknown>).type === 'message'
+        ) {
+          // Одиночное новое сообщение — пушим в Store
+          store.setState('messages', [...currentMessages, data]);
+        }
+      });
+
+      // 3. Вешаем обработчик на успешное подключение
+      this._wsTransport.on(WSTransportEvents.Connected, () => {
+        // eslint-disable-next-line no-console
+        console.log(`Успешно подключено к чату #${chatId}`);
+        
+        // Запрашиваем историю сообщений
+        this._wsTransport?.send({
+          type: 'get old',
+          content: '0'
+        });
+      });
+
+      // 4. Запускаем само подключение
+      await this._wsTransport.connect();
+
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('[ChatsController] Ошибка инициализации WSTransport:', error);
+    }
+  }
+
+  //Отправляем сообщение
+  public sendMessage(content: string): void {
+    if (!this._wsTransport) {
+      // eslint-disable-next-line no-console
+      console.error('Невозможно отправить сообщение: WSTransport не инициализирован');
+      return;
+    }
+
+    try {
+      this._wsTransport.send({
+        content: content,
+        type: 'message',
+      });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Ошибка отправки сообщения через WSTransport:', error);
+    }
+
+  }
+
+  /**
+   * Метод чистого закрытия сокета
+   */
+  public closeActiveSocket(): void {
+    if (this._wsTransport) {
+      this._wsTransport.close();
+      this._wsTransport = null;
     }
   }
 
@@ -61,9 +164,8 @@ class ChatsController {
       await ChatsAPI.create(title);
 
       await this.fetchChats(true); 
-      //console.log(chats);
-      //store.setState('chats', chats);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Ошибка fetchChats:', error);
     }
   }
@@ -107,7 +209,8 @@ class ChatsController {
       await ChatsAPI.addUsers([userId], chatId);
       
       return true;
-    } catch (error: any) {
+    } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Ошибка во флоу поиска и добавления пользователя:', error);
       throw error; 
     }
@@ -151,7 +254,8 @@ class ChatsController {
         
         return true; // Возвращаем true при успешном удалении!
 
-      } catch (error: any) {
+      } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('Ошибка во флоу удаления пользователя:', error);
         throw error;
       }
@@ -160,7 +264,7 @@ class ChatsController {
   public async deleteChat(chatId: number): Promise<void> {
     try {
       await ChatsAPI.delete(chatId);
-      
+      // eslint-disable-next-line no-console
       console.log(`Чат #${chatId} успешно удален`);
       
       //Закрываем окно чата если этот чат был удалён
@@ -174,6 +278,7 @@ class ChatsController {
       await this.fetchChats(true);
 
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Ошибка при удалении чата в контроллере:', error);
       throw error;
     }
@@ -183,11 +288,13 @@ class ChatsController {
     public async updateChatAvatar(data: FormData): Promise<void> {
     try {
       await ChatsAPI.updateChatAvatar(data);
+      // eslint-disable-next-line no-console
       console.log('Аватар чата успешно обновлен на сервере');
 
       //Обновляем список чатов
       await this.fetchChats(true);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Ошибка обновления аватара чата в контроллере:', error);
       throw error;
     }

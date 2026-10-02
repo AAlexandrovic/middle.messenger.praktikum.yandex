@@ -1,5 +1,8 @@
 import Block from "../abstracts/Block";
 
+
+// поскольку это описание общей декларации
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type BlockConstructor = new (...args: any[]) => Block<any>;
 
 // Вспомогательная функция для очистки пути от query-параметров
@@ -28,7 +31,7 @@ function parseQueryParams(pathname: string): Record<string, string> {
 class Route {
   private _pathname: string;
   private _blockClass: BlockConstructor;
-  private _block: Block<any> | null = null;
+  private _block: Block<Record<string, unknown>> | null = null;
   private _props: { rootQuery: string };
 
   constructor(pathname: string, view: BlockConstructor, props: { rootQuery: string }) {

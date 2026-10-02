@@ -9,6 +9,7 @@ class UserController {
     return UserAPI.signin(data)
       .then(() => this.getUser())
       .catch((error) => {
+        // eslint-disable-next-line no-console
         console.error('signin error:', error);
         store.setState('user', null);
         throw error;
@@ -28,6 +29,7 @@ class UserController {
           return null;
         }
         // Все остальные ошибки — реальные сбои
+        // eslint-disable-next-line no-console
         console.error('getUser error:', error);
         throw error;
       });
@@ -41,6 +43,7 @@ class UserController {
       
       await this.getUser();
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('signup error:', error);
       throw error;
     }
@@ -52,6 +55,7 @@ class UserController {
         store.setState('user', null);
       })
       .catch((error) => {
+        // eslint-disable-next-line no-console
         console.error('logout error:', error);
         throw error;
       });
@@ -63,8 +67,8 @@ class UserController {
       const updatedUser = await UserAPI.update(data);
 
       store.setState('user', updatedUser);
-      //console.log(updatedUser);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('updateProfile error:', error);
       throw error;
     }
@@ -76,6 +80,7 @@ class UserController {
 
       store.setState('user', updatedUser);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('updateAvatar error в UserController:', error);
       // Пробрасываем ошибку дальше, чтобы компонент мог вывести её в UI
       throw error; 
@@ -85,8 +90,8 @@ class UserController {
   public async updatePassword(data: PasswordUpdateRequest): Promise<void> {
     try {
       await UserAPI.updatePassword(data);
-      //console.log('Пароль успешно изменен на сервере');
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('updatePassword error :', error);
       throw error; 
     }

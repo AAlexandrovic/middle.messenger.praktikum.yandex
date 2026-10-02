@@ -90,7 +90,7 @@ class SettingsPage extends Block<SettingsPageProps> {
           
           // 2. После успешного выхода делаем редирект
           router.go('/');
-        } catch (error) {
+        } catch {
           //console.error('Ошибка выхода:', error);
           alert('Не удалось выйти из аккаунта. Попробуйте позже.');
         }
@@ -100,7 +100,7 @@ class SettingsPage extends Block<SettingsPageProps> {
 }
 
 export default connect((state) => {
-  const user = state.user as any;
+  const user = state.user as Record<string, unknown> | null;
 
   // Если юзер в Сторе отсутствует, отдаем структуру с null
   if (!user) {

@@ -12,4 +12,9 @@ export default defineConfig({
     port: 3000,
     strictPort: true,
   },
+    test: {
+    globals: true,
+    environment: 'jsdom',
+    include:  ['**/*.{test,spec}.{js,ts}']
+  }
 });

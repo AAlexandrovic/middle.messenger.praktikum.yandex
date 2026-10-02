@@ -61,10 +61,13 @@ export default class SettingsPasswordPage extends Block<SettingsPasswordProps> {
         e.preventDefault();
 
         const formBlock = this.children.find(
-          (c) => (c as any).props?.id === "password-form" || (c as any).constructor?.componentName === "Form"
+          (c) => 
+            (c as unknown as { props: Record<string, unknown> }).props?.id === "password-form" || 
+            (c as unknown as { constructor: { componentName?: string } }).constructor?.componentName === "Form"
         ) as Form | undefined;
 
         if (!formBlock) {
+          // eslint-disable-next-line no-console
           console.error("Form component not found!");
           return;
         }
@@ -88,6 +91,7 @@ export default class SettingsPasswordPage extends Block<SettingsPasswordProps> {
           await UserController.updatePassword(passwordData);
           router.go("/settings");
         } catch (error) {
+          // eslint-disable-next-line no-console
           console.error("Ошибка смены пароля в компоненте:", error);
           this.setProps({
             error: "Не удалось изменить пароль. Убедитесь, что старый пароль введен верно.",

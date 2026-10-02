@@ -1,5 +1,6 @@
 import Block from "../abstracts/Block";
 import { validateField } from "../services/Validation";
+import { Form } from '../Form'; 
 import Router from "../services/Router";
 import { connect } from '../api/HOC/connect';
 import ChatsController from "../api/controllers/ChatsController";
@@ -102,14 +103,14 @@ class ChatsPage extends Block<ChatsPageProps> {
           const error = validateField("message", messageText);
 
           const formBlock = this.children.find(
-            (c) => (c as any).props?.id === "chat-message-form"
-          ) as any;
+            (c) => (c as unknown as { props: Record<string, unknown> }).props?.id === "chat-message-form"
+          ) as Form | undefined;
 
           if (formBlock && !formBlock.validate()) return;
           if (error) return;
 
           if (messageText) {
-           // ChatsController.sendMessage(messageText);
+            ChatsController.sendMessage(messageText);
             inputEl.value = '';
           }
         }
@@ -127,6 +128,7 @@ class ChatsPage extends Block<ChatsPageProps> {
             // Автоматически переходим в только что созданный чат
             router.go(`/chats?title=${encodeURIComponent(chatTitle)}`);
           } catch (error) {
+            // eslint-disable-next-line no-console
             console.error("Не удалось создать чат:", error);
           }
         }
@@ -153,13 +155,14 @@ class ChatsPage extends Block<ChatsPageProps> {
           const loginToFind = userLoginInput.trim();
 
           try {
-            const isAdded = await (ChatsController.searchAndAddUserToChat(loginToFind, activeChatId) as any);
+            const isAdded = await (ChatsController.searchAndAddUserToChat(loginToFind, activeChatId) as Promise<boolean>);
             
             if (isAdded) {
               alert(`Пользователь "${loginToFind}" успешно добавлен в чат!`);
             }
-          } catch (error: any) {
-            alert(`Ошибка: ${error.message || 'Не удалось добавить пользователя.'}`);
+          } catch (error: unknown) {
+            const err = error as Record<string, unknown>;
+            alert(`Ошибка: ${err.message || 'Не удалось добавить пользователя.'}`);
           }
           return;
         }
@@ -181,8 +184,9 @@ class ChatsPage extends Block<ChatsPageProps> {
            if (isDeleted) {
               alert('Пользователь успешно удален из чата!');
             }
-          } catch (error: any) {
-            alert(`Ошибка: ${error.message || 'Не удалось удалить пользователя.'}`);
+          } catch (error: unknown) {
+            const err = error as Record<string, unknown>;
+            alert(`Ошибка: ${err.message || 'Не удалось удалить пользователя.'}`);
           }
             return;
         }
@@ -210,8 +214,9 @@ class ChatsPage extends Block<ChatsPageProps> {
             alert(`Чат "${chatName}" успешно удален.`);
             
             router.go('/chats');
-          } catch (error: any) {
-            alert(`Ошибка при удалении чата: ${error.message || 'Не удалось удалить чат.'}`);
+          } catch (error: unknown) {
+            const err = error as Record<string, unknown>;
+            alert(`Ошибка при удалении чата: ${err.message || 'Не удалось удалить чат.'}`);
           }
           return;
         }
@@ -253,7 +258,7 @@ class ChatsPage extends Block<ChatsPageProps> {
             // Отправляем в контроллер
             await ChatsController.updateChatAvatar(formData);
             alert('Аватар чата успешно изменен!');
-          } catch (error) {
+          } catch {
             alert('Не удалось обновить аватар чата. Возможно, вы не являетесь создателем чата.');
           } finally {
             // Обязательно сбрасываем значение инпута, чтобы можно было загрузить этот же файл повторно
@@ -267,30 +272,27 @@ class ChatsPage extends Block<ChatsPageProps> {
   
   //Первая загрузка списка всех чатов
   protected componentDidMount(): void {
-    ChatsController.fetchChats().then(() => {
-      // Проверяем наличие параметра title в URL при входе
+    ChatsController.fetchChats();
+    // ChatsController.fetchChats().then(() => {
+    //   // Проверяем наличие параметра title в URL при входе
+    //   const query = this.props.queryParams;
+    //   if (query?.title) {
+    //     ChatsController.selectChatByTitle(query.title);
+    //   }
+    // });
+          // Проверяем наличие параметра title в URL при входе
       const query = this.props.queryParams;
       if (query?.title) {
         ChatsController.selectChatByTitle(query.title);
       }
-    });
   }
 
   //Отображаем выбранный чат
-  protected componentDidUpdate(oldProps: any, newProps: any): boolean {
-  const oldTitle = oldProps.queryParams?.title || '';
-  const newTitle = newProps.queryParams?.title || '';
-
-  if (newTitle !== oldTitle) {
-    if (newTitle) {
-      ChatsController.selectChatByTitle(newTitle);
-    } else {
-      store.setState('activeChatId', null);
-      store.setState('messages', []);
+  protected componentDidUpdate(oldProps: ChatsPageProps, newProps: ChatsPageProps): boolean {
+      if (JSON.stringify(oldProps.chatsPage) !== JSON.stringify(newProps.chatsPage)) {
+      return true; 
     }
-    return true; 
-  }
-  return false;
+    return false;
   }
 
 
@@ -399,10 +401,10 @@ class ChatsPage extends Block<ChatsPageProps> {
 }
 
 export default connect((state) => {
-  const user = state.user as any;
-  const chats = (state.chats as any[] || []);
+  const user = state.user as Record<string, unknown> | null;
+  const chats = (state.chats as Record<string, unknown>[] || []);
   const activeChatId = state.activeChatId as number | null;
-  const messages = (state.messages as any[] || []);
+  const messages = (state.messages as Record<string, unknown>[] || []);
 
   const activeChat = chats.find(c => c.id === activeChatId);
 
@@ -412,27 +414,31 @@ export default connect((state) => {
         name: user?.first_name || 'Пользователь',
         avatar: user?.avatar ? `${RESOURCES_URL}${user.avatar}` : 'https://placeholder.co'
       },
-      chats: chats.map(chat => ({
-        id: chat.id,
-        title: chat.title, 
-        isActive: chat.id === activeChatId,
-        unreadCount: chat.unread_count,
-        lastMessage: chat.last_message?.content || 'Нет сообщений',
-        time: chat.last_message?.time 
-          ? new Date(chat.last_message.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
-          : '',
-        avatar: chat.avatar ? `${RESOURCES_URL}${chat.avatar}` : 'https://placeholder.co'
-      })),
+       chats: chats.map(chat => {
+        // Приводим last_message к объекту, чтобы безопасно прочитать свойство content
+        const lastMsg = chat.last_message as Record<string, unknown> | null;
+        return {
+          id: chat.id as number,
+          title: chat.title as string, 
+          isActive: chat.id === activeChatId,
+          unreadCount: chat.unread_count as number | undefined,
+          lastMessage: (lastMsg?.content as string) || 'Нет сообщений',
+          time: lastMsg?.time 
+            ? new Date(lastMsg.time as string).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+            : '',
+          avatar: chat.avatar ? `${RESOURCES_URL}${chat.avatar}` : 'https://placeholder.co'
+        };
+      }),
       activeChat: {
         id: activeChatId,
-        name: activeChat?.title || '', 
+        name: (activeChat?.title as string) || '', 
         avatar: activeChat?.avatar 
           ? `${RESOURCES_URL}${activeChat.avatar}?v=${Date.now()}` 
           : 'https://placeholder.co',
         messages: messages.map(msg => ({
-          id: msg.id,
-          text: msg.content,
-          time: msg.time ? new Date(msg.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
+          id: msg.id as number,
+          text: msg.content as string,
+          time: msg.time ? new Date(msg.time as string).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
           isIncoming: msg.user_id !== user?.id
         }))
       }

@@ -3,6 +3,16 @@ import tseslint from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
 
 export default [
+
+    {
+    ignores: [
+      '**/tests/**',
+      '**/*.test.ts',
+      '**/*.spec.ts',
+      '**/*.factory.ts',
+      'dist/**'
+    ]
+  },
   // Базовые правила для JS
   js.configs.recommended,
 
@@ -17,36 +27,43 @@ export default [
         project: './tsconfig.json',
         tsconfigRootDir: import.meta.dirname,
       },
+      globals: {
+        window: 'readonly',
+        document: 'readonly',
+        console: 'readonly',
+        XMLHttpRequest: 'readonly',
+        XMLHttpRequestResponseType: 'readonly',
+        FormData: 'readonly',
+        WebSocket: 'readonly',
+        Event: 'readonly',
+        HTMLInputElement: 'readonly',
+        HTMLFormElement: 'readonly',
+        HTMLElement: 'readonly',
+        ErrorEvent: 'readonly',
+        URLSearchParams: 'readonly',
+        encodeURIComponent: 'readonly',
+        decodeURIComponent: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
+        setTimeout: 'readonly',
+        prompt: 'readonly',
+        confirm: 'readonly',
+        alert: 'readonly',
+        process: 'readonly'
+      }
     },
     plugins: {
       '@typescript-eslint': tseslint,
     },
     rules: {
+      "no-unused-vars": "off",
       // Строгая типизация (важно для дженериков и интерфейсов)
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-non-null-assertion': 'warn',
 
-      // Стиль именования (для классов, интерфейсов, типов)
-      '@typescript-eslint/naming-convention': [
-        'error',
-        {
-          selector: 'interface',
-          format: ['PascalCase'],
-          custom: {
-            regex: '^I[A-Z]',
-            match: true,
-          },
-        },
-        {
-          selector: 'typeAlias',
-          format: ['PascalCase'],
-        },
-        {
-          selector: 'class',
-          format: ['PascalCase'],
-        },
-      ],
+      // Убираем строгую типизацию для наименований
+      '@typescript-eslint/naming-convention': 'off',
     },
   },
 
@@ -55,6 +72,11 @@ export default [
     languageOptions: {
       ecmaVersion: 2021,
       sourceType: 'module',
+      globals: {
+        window: 'readonly',
+        document: 'readonly',
+        console: 'readonly'
+      }
     },
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
     rules: {

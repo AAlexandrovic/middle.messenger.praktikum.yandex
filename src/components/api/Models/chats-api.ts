@@ -1,4 +1,4 @@
-import HTTPTransport from '../HTTPTransport';
+import HTTPTransport from '../services/HTTPTransport';
 import { BaseAPI } from '../base-api';
 import { UserDTO } from './user-api';
 
@@ -93,6 +93,11 @@ class ChatsAPI extends BaseAPI {
               chatId 
             }
           });
+        }
+
+        //Получаем токе чата
+        public getChatToken(chatId: number): Promise<{ token: string }> {
+          return chatAPIInstance.post<{ token: string }>(`/chats/token/${chatId}`, {});
         }
 }
 

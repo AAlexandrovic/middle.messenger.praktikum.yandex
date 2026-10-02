@@ -1,4 +1,4 @@
-import { BASE_URL } from './config'; // Укажите ваш правильный относительный путь к файлу конфигурации
+import { BASE_URL } from '../config'; // Укажите ваш правильный относительный путь к файлу конфигурации
 
 export enum METHODS {
   GET = 'GET',
@@ -114,7 +114,7 @@ export class HTTPTransport {
             if (contentType.includes('application/json')) {
               try {
                 response = JSON.parse(xhr.responseText);
-              } catch (e) {
+              } catch {
                 response = xhr.responseText;
               }
             } else {
